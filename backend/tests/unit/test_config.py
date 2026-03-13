@@ -32,3 +32,13 @@ def test_settings_from_env():
     assert s.milvus_port == 29530
     assert s.llm_model == "gpt-4o"
     assert s.top_k == 20
+
+
+def test_phase_b_settings_defaults():
+    with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test"}, clear=False):
+        s = Settings()
+    assert s.search_mode == "dense"
+    assert s.reranker_type == "cross_encoder"
+    assert s.reranker_model == "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    assert s.reranker_top_k_multiplier == 3
+    assert s.guardrails_enabled is True

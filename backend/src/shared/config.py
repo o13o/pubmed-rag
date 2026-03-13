@@ -18,6 +18,17 @@ class Settings(BaseSettings):
     top_k: int = 10
     mesh_db_path: str = "data/mesh.duckdb"
 
+    # Phase B: Hybrid Search
+    search_mode: str = "dense"
+
+    # Phase B: Reranker
+    reranker_type: str = "cross_encoder"
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    reranker_top_k_multiplier: int = 3
+
+    # Phase B: Guardrails
+    guardrails_enabled: bool = True
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

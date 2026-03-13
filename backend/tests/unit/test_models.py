@@ -1,7 +1,8 @@
 """Tests for shared Pydantic models."""
 
 from src.shared.models import (
-    Article, Chunk, Citation, IngestReport, RAGResponse, SearchFilters, SearchResult,
+    Article, Chunk, Citation, GuardrailWarning, IngestReport,
+    RAGResponse, SearchFilters, SearchResult, ValidatedResponse,
 )
 
 
@@ -66,6 +67,45 @@ def test_rag_response():
     assert len(r.citations) == 1
     assert r.query == "test query"
     assert r.citations[0].pmid == "1"
+
+
+def test_guardrail_warning():
+    w = GuardrailWarning(
+        check="citation_grounding", severity="error",
+        message="Claim not supported", span="Drug X cures cancer",
+    )
+    assert w.check == "citation_grounding"
+    assert w.severity == "error"
+    assert w.span == "Drug X cures cancer"
+
+
+def test_guardrail_warning_defaults():
+    w = GuardrailWarning(check="hallucination", severity="warning", message="test")
+    assert w.span == ""
+
+
+def test_validated_response():
+    vr = ValidatedResponse(
+        answer="Test answer",
+        citations=[Citation(pmid="123", title="T")],
+        query="test query",
+        warnings=[GuardrailWarning(check="hallucination", severity="warning", message="Possible hallucination")],
+        disclaimer="This is not medical advice.",
+        is_grounded=True,
+    )
+    assert vr.is_grounded is True
+    assert len(vr.warnings) == 1
+    assert vr.disclaimer == "This is not medical advice."
+
+
+def test_search_filters_search_mode():
+    f = SearchFilters(search_mode="hybrid")
+    assert f.search_mode == "hybrid"
+
+
+def test_search_filters_search_mode_default():
+    f = SearchFilters()
+    assert f.search_mode is None
 
 
 def test_ingest_report():

@@ -39,6 +39,7 @@ class SearchFilters(BaseModel):
     mesh_categories: list[str] = Field(default_factory=list)
     publication_types: list[str] = Field(default_factory=list)
     top_k: int = 10
+    search_mode: str | None = None
 
 
 class SearchResult(BaseModel):
@@ -63,6 +64,22 @@ class RAGResponse(BaseModel):
     answer: str
     citations: list[Citation]
     query: str
+
+
+class GuardrailWarning(BaseModel):
+    check: str
+    severity: str
+    message: str
+    span: str = ""
+
+
+class ValidatedResponse(BaseModel):
+    answer: str
+    citations: list[Citation]
+    query: str
+    warnings: list[GuardrailWarning]
+    disclaimer: str
+    is_grounded: bool
 
 
 class IngestReport(BaseModel):
