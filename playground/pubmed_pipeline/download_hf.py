@@ -1,8 +1,10 @@
-"""Download PubMed data from HuggingFace and convert to intermediate JSONL."""
+"""Download PubMed baseline data from NLM FTP and convert to intermediate JSONL."""
 
 import argparse
+import gzip
 import json
 import sys
+import urllib.request
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -103,10 +105,53 @@ def extract_year(publication_date: str) -> str:
     return publication_date[:4] if len(publication_date) >= 4 else ""
 
 
+FTP_BASE_URL = "https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/"
+
+
+def list_baseline_files(base_url: str = FTP_BASE_URL) -> list[str]:
+    """List .xml.gz files from NLM baseline directory."""
+    import re
+
+    resp = urllib.request.urlopen(base_url, timeout=30)
+    content = resp.read().decode()
+    files = sorted(set(re.findall(r"pubmed\d+n\d+\.xml\.gz", content)))
+    return files
+
+
+def download_and_parse_baseline_file(url: str, target_years: set[str]) -> list[dict]:
+    """Download a single .xml.gz baseline file, parse MedlineCitations, return records."""
+    print(f"  Downloading {url}...", file=sys.stderr)
+    resp = urllib.request.urlopen(url, timeout=300)
+    data = gzip.decompress(resp.read())
+    xml_str = data.decode("utf-8")
+
+    records = []
+    # PubMed baseline XML has <PubmedArticleSet> root with <PubmedArticle> children
+    # Each <PubmedArticle> contains a <MedlineCitation>
+    root = ET.fromstring(xml_str)
+    for article_el in root.findall("PubmedArticle"):
+        citation_el = article_el.find("MedlineCitation")
+        if citation_el is None:
+            continue
+
+        citation_xml = ET.tostring(citation_el, encoding="unicode")
+        try:
+            parsed = parse_medline_xml(citation_xml)
+        except ET.ParseError:
+            continue
+
+        year = extract_year(parsed["publication_date"])
+        if year in target_years:
+            records.append(parsed)
+
+    return records
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Download PubMed from HuggingFace")
+    parser = argparse.ArgumentParser(description="Download PubMed baseline from NLM FTP")
     parser.add_argument("--config", default="config.yaml", help="Path to config file")
-    parser.add_argument("--limit", type=int, default=None, help="Max records to process (for testing)")
+    parser.add_argument("--limit", type=int, default=None, help="Max baseline files to process (for testing)")
+    parser.add_argument("--start", type=int, default=0, help="Start from this file index (0-based)")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -117,38 +162,31 @@ def main():
     raw_dir.mkdir(parents=True, exist_ok=True)
     output_path = raw_dir / "pubmed_raw.jsonl"
 
-    from datasets import load_dataset
+    print("Listing baseline files...", file=sys.stderr)
+    files = list_baseline_files()
+    print(f"Found {len(files)} baseline files", file=sys.stderr)
 
-    ds = load_dataset("ncbi/pubmed", streaming=True, split="train")
+    files = files[args.start:]
+    if args.limit is not None:
+        files = files[:args.limit]
+    print(f"Processing {len(files)} files (start={args.start}, limit={args.limit})", file=sys.stderr)
 
-    count = 0
-    written = 0
+    total_written = 0
     with open(output_path, "w", encoding="utf-8") as out:
-        for record in ds:
-            count += 1
-            if args.limit is not None and count > args.limit:
-                break
-
-            xml_str = record.get("MedlineCitation", {}).get("value", "")
-            if not xml_str:
-                continue
-
+        for i, filename in enumerate(files, 1):
+            url = FTP_BASE_URL + filename
             try:
-                parsed = parse_medline_xml(xml_str)
-            except ET.ParseError:
+                records = download_and_parse_baseline_file(url, target_years)
+            except Exception as e:
+                print(f"  Error processing {filename}: {e}", file=sys.stderr)
                 continue
 
-            year = extract_year(parsed["publication_date"])
-            if year not in target_years:
-                continue
+            for r in records:
+                out.write(json.dumps(r, ensure_ascii=False) + "\n")
+            total_written += len(records)
+            print(f"  [{i}/{len(files)}] {filename}: {len(records)} records (total: {total_written})", file=sys.stderr)
 
-            out.write(json.dumps(parsed, ensure_ascii=False) + "\n")
-            written += 1
-
-            if written % 10000 == 0:
-                print(f"  Written {written} records (scanned {count})...", file=sys.stderr)
-
-    print(f"Done. Scanned {count}, written {written} to {output_path}", file=sys.stderr)
+    print(f"Done. Written {total_written} records to {output_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

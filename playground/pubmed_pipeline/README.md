@@ -6,18 +6,21 @@ See `capstone/docs/specs/2026-03-13-pubmed-download-pipeline-design.md` for full
 ## Setup
 
 ```bash
-pip install datasets pyyaml
+pip install pyyaml
 ```
 
 ## Usage
 
-### 1. Download from HuggingFace
+### 1. Download from NLM FTP Baseline
 
 ```bash
-# Small test (first 10,000 records)
-python download_hf.py --limit 10000
+# Download 1 baseline file from a recent range (file 1200 has 2023 data)
+python download_hf.py --start 1199 --limit 1
 
-# Full download (warning: slow, large output)
+# Download 5 files from the recent range
+python download_hf.py --start 1195 --limit 5
+
+# Full download (warning: 1334 files, very slow)
 python download_hf.py
 ```
 
