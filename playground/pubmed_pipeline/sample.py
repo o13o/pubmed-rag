@@ -124,3 +124,61 @@ def stratified_sample(records: list[dict], config: dict) -> tuple[list[dict], di
         "shortfalls": shortfalls,
     }
     return sampled, audit
+
+
+def load_records(raw_dir: Path) -> list[dict]:
+    """Load all JSONL files from raw_dir."""
+    records = []
+    for jsonl_file in sorted(raw_dir.glob("*.jsonl")):
+        with open(jsonl_file, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    records.append(json.loads(line))
+    return records
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Filter and sample PubMed records")
+    parser.add_argument("--config", default="config.yaml", help="Path to config file")
+    args = parser.parse_args()
+
+    with open(args.config) as f:
+        config = yaml.safe_load(f)
+
+    raw_dir = Path(config["paths"]["raw_dir"])
+    processed_dir = Path(config["paths"]["processed_dir"])
+    processed_dir.mkdir(parents=True, exist_ok=True)
+
+    print("Loading records...", file=sys.stderr)
+    all_records = load_records(raw_dir)
+    print(f"Loaded {len(all_records)} records", file=sys.stderr)
+
+    print("Filtering...", file=sys.stderr)
+    filtered = filter_records(all_records, config)
+    print(f"After filtering: {len(filtered)} records", file=sys.stderr)
+
+    print("Sampling...", file=sys.stderr)
+    sampled, audit = stratified_sample(filtered, config)
+    print(f"Sampled: {len(sampled)} records", file=sys.stderr)
+
+    # Write sampled JSONL
+    output_path = processed_dir / "sampled.jsonl"
+    with open(output_path, "w", encoding="utf-8") as f:
+        for r in sampled:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print(f"Written to {output_path}", file=sys.stderr)
+
+    # Write audit log
+    audit["config"] = config
+    audit["timestamp"] = datetime.now(timezone.utc).isoformat()
+    audit["sampled_pmids"] = [r["pmid"] for r in sampled]
+
+    audit_path = processed_dir / "audit_log.json"
+    with open(audit_path, "w", encoding="utf-8") as f:
+        json.dump(audit, f, ensure_ascii=False, indent=2)
+    print(f"Audit log written to {audit_path}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
