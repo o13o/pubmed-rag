@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from src.shared.models import SearchFilters, SearchResult
-from src.retrieval.search import build_filter_expression, parse_search_results
+from src.retrieval.search import build_filter_expression, parse_search_results, _resolve_search_mode
 
 
 def test_build_filter_no_filters():
@@ -62,3 +62,16 @@ def test_parse_search_results():
     assert results[0].pmid == "123"
     assert results[0].score == 0.95
     assert results[0].mesh_terms == ["Neoplasms"]
+
+
+def test_resolve_search_mode_from_filters():
+    filters = SearchFilters(search_mode="hybrid")
+    assert _resolve_search_mode(filters) == "hybrid"
+
+
+def test_resolve_search_mode_default_from_config(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    filters = SearchFilters()  # search_mode is None
+    # Should fall back to config default ("dense")
+    mode = _resolve_search_mode(filters)
+    assert mode == "dense"
