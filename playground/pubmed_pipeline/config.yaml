@@ -1,0 +1,25 @@
+years: [2021, 2022, 2023, 2024, 2025]
+language: "eng"
+require_abstract: true
+sampling:
+  n_max: 100000
+  seed: 42
+  allocation: "equal_per_year"  # Only equal_per_year is implemented
+  min_coverage:
+    enabled: true
+    per_category_per_year: 500
+    mesh_categories:
+      - "Neoplasms"
+      - "Cardiovascular Diseases"
+      - "Infectious Diseases"
+      - "Nervous System Diseases"
+      - "Respiratory Tract Diseases"
+      - "Digestive System Diseases"
+      - "Urogenital Diseases"
+      - "Musculoskeletal Diseases"
+      - "Nutritional and Metabolic Diseases"
+      - "Immune System Diseases"
+
+paths:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
