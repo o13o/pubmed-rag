@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ChatPanel } from "./components/ChatPanel";
 import { FilterPanel } from "./components/FilterPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
-import { askQuery, searchQuery } from "./lib/api";
+import { askQueryStream, searchQuery } from "./lib/api";
 import type {
   Citation,
   Filters,
   Message,
   Mode,
   SearchResult,
+  SSEDoneEvent,
 } from "./types";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
   const [citations, setCitations] = useState<Citation[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const handleSend = async (query: string) => {
     const userMsg: Message = {
@@ -33,23 +35,65 @@ function App() {
 
     try {
       if (mode === "ask") {
-        const res = await askQuery({
-          query,
-          year_min: filters.year_min,
-          year_max: filters.year_max,
-          top_k: filters.top_k,
-          search_mode: filters.search_mode,
-        });
+        const assistantId = crypto.randomUUID();
         const assistantMsg: Message = {
-          id: crypto.randomUUID(),
+          id: assistantId,
           role: "assistant",
-          content: res.answer,
-          citations: res.citations,
-          warnings: res.warnings,
-          disclaimer: res.disclaimer,
+          content: "",
         };
         setMessages((prev) => [...prev, assistantMsg]);
-        setCitations(res.citations);
+
+        abortRef.current = new AbortController();
+
+        await askQueryStream(
+          {
+            query,
+            year_min: filters.year_min,
+            year_max: filters.year_max,
+            top_k: filters.top_k,
+            search_mode: filters.search_mode,
+            stream: true,
+          },
+          // onToken
+          (text: string) => {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantId
+                  ? { ...m, content: m.content + text }
+                  : m,
+              ),
+            );
+          },
+          // onDone
+          (data: SSEDoneEvent) => {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantId
+                  ? {
+                      ...m,
+                      citations: data.citations,
+                      warnings: data.warnings,
+                      disclaimer: data.disclaimer,
+                    }
+                  : m,
+              ),
+            );
+            setCitations(data.citations);
+            setLoading(false);
+          },
+          // onError
+          (error: Error) => {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantId
+                  ? { ...m, role: "error", content: error.message }
+                  : m,
+              ),
+            );
+            setLoading(false);
+          },
+          abortRef.current.signal,
+        );
       } else {
         const res = await searchQuery({
           query,
@@ -76,6 +120,7 @@ function App() {
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setLoading(false);
+      abortRef.current = null;
     }
   };
 

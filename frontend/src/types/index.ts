@@ -19,6 +19,7 @@ export interface AskRequest {
   year_max?: number;
   top_k?: number;
   search_mode?: string;
+  stream?: boolean;
 }
 
 export interface AskResponse {
@@ -60,6 +61,21 @@ export interface Filters {
   year_max?: number;
   top_k: number;
   search_mode: string;
+}
+
+export interface SSETokenEvent {
+  text: string;
+}
+
+export interface SSEDoneEvent {
+  citations: Citation[];
+  warnings: Warning[];
+  disclaimer: string;
+  is_grounded: boolean;
+}
+
+export interface SSEErrorEvent {
+  message: string;
 }
 
 export interface Message {

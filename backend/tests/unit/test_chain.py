@@ -6,7 +6,7 @@ from src.shared.models import (
     Citation, GuardrailWarning, RAGResponse, SearchFilters,
     SearchResult, ValidatedResponse,
 )
-from src.rag.chain import ask
+from src.rag.chain import ask, ask_stream
 
 
 def _mock_search_results():
@@ -103,3 +103,97 @@ def test_ask_with_no_results(mock_expander_cls, mock_search):
 
     assert isinstance(response, ValidatedResponse)
     assert response.citations == []
+
+
+@patch("src.rag.chain.search")
+@patch("src.rag.chain.QueryExpander")
+def test_ask_stream_yields_token_and_done_events(mock_expander_cls, mock_search):
+    """ask_stream() should yield token events then a done event."""
+    mock_search.return_value = _mock_search_results()
+    mock_expander = MagicMock()
+    mock_expander.expand.return_value = MagicMock(expanded_query="cancer treatment")
+    mock_expander_cls.return_value = mock_expander
+
+    mock_llm = MagicMock()
+    mock_llm.complete_stream.return_value = iter(["Based on ", "research..."])
+    # Guardrail validation LLM call
+    mock_llm.complete.return_value = "[]"
+
+    mock_reranker = MagicMock()
+    mock_reranker.rerank.return_value = _mock_search_results()
+
+    events = list(ask_stream(
+        query="cancer treatment",
+        collection=MagicMock(),
+        llm=mock_llm,
+        mesh_db=MagicMock(),
+        reranker=mock_reranker,
+        guardrails_enabled=True,
+    ))
+
+    # Should have 2 token events + 1 done event
+    token_events = [e for e in events if e["event"] == "token"]
+    done_events = [e for e in events if e["event"] == "done"]
+
+    assert len(token_events) == 2
+    assert token_events[0]["data"]["text"] == "Based on "
+    assert token_events[1]["data"]["text"] == "research..."
+
+    assert len(done_events) == 1
+    done_data = done_events[0]["data"]
+    assert "citations" in done_data
+    assert "warnings" in done_data
+    assert "disclaimer" in done_data
+    assert "is_grounded" in done_data
+    assert len(done_data["citations"]) == 1
+
+
+@patch("src.rag.chain.search")
+@patch("src.rag.chain.QueryExpander")
+def test_ask_stream_without_guardrails(mock_expander_cls, mock_search):
+    """ask_stream() without guardrails should still yield done with empty warnings."""
+    mock_search.return_value = _mock_search_results()
+    mock_expander = MagicMock()
+    mock_expander.expand.return_value = MagicMock(expanded_query="cancer treatment")
+    mock_expander_cls.return_value = mock_expander
+
+    mock_llm = MagicMock()
+    mock_llm.complete_stream.return_value = iter(["answer"])
+
+    mock_reranker = MagicMock()
+    mock_reranker.rerank.return_value = _mock_search_results()
+
+    events = list(ask_stream(
+        query="cancer treatment",
+        collection=MagicMock(),
+        llm=mock_llm,
+        mesh_db=MagicMock(),
+        reranker=mock_reranker,
+        guardrails_enabled=False,
+    ))
+
+    done_events = [e for e in events if e["event"] == "done"]
+    assert len(done_events) == 1
+    assert done_events[0]["data"]["warnings"] == []
+    assert done_events[0]["data"]["disclaimer"] == ""
+
+
+@patch("src.rag.chain.search")
+@patch("src.rag.chain.QueryExpander")
+def test_ask_stream_yields_error_on_exception(mock_expander_cls, mock_search):
+    """ask_stream() should yield an error event if an exception occurs."""
+    mock_search.side_effect = RuntimeError("Milvus connection lost")
+    mock_expander = MagicMock()
+    mock_expander.expand.return_value = MagicMock(expanded_query="test")
+    mock_expander_cls.return_value = mock_expander
+
+    events = list(ask_stream(
+        query="test",
+        collection=MagicMock(),
+        llm=MagicMock(),
+        mesh_db=MagicMock(),
+    ))
+
+    assert len(events) == 1
+    assert events[0]["event"] == "error"
+    assert "Milvus connection lost" in events[0]["data"]["message"]
