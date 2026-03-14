@@ -37,7 +37,7 @@ Two-column layout: chat (left, main) + side panel (right).
 | `App.tsx` | Root layout: header + 2-column grid |
 | `ChatPanel` | Message list + input form. Sends query to API |
 | `MessageBubble` | Single Q or A. Answer includes disclaimer and warnings |
-| `FilterPanel` | Ask/Search mode toggle, year_min, year_max, top_k inputs |
+| `FilterPanel` | Ask/Search mode toggle, year_min, year_max, top_k, search_mode (dense/hybrid) |
 | `ResultsPanel` | Ask mode: citation list. Search mode: search result cards |
 
 ## API Client
