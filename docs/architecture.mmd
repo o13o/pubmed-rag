@@ -1,0 +1,123 @@
+%%{init: {'theme': 'dark', 'themeVariables': {'fontSize': '13px'}, 'flowchart': {'rankSpacing': 35, 'nodeSpacing': 25, 'curve': 'basis'}}}%%
+flowchart TD
+    %% ── Data Ingestion ──
+    JSONL["PubMed JSONL\n100k abstracts"]
+    LOADER["loader.py\nparse & validate"]
+    CHUNKER["chunker.py\ntitle + abstract + MeSH"]
+    EMBEDDER["embedder.py\ntext-embedding-3-small"]
+
+    JSONL --> LOADER --> CHUNKER --> EMBEDDER
+
+    subgraph MILVUS["Milvus 2.5+"]
+        direction LR
+        DENSE["HNSW Index\n(dense vectors)"]
+        BM25["BM25 Index\n(sparse vectors)"]
+        SCALAR["Scalar Fields\nyear / journal / MeSH"]
+    end
+
+    EMBEDDER --> MILVUS
+
+    %% ── Query & Retrieval ──
+    USER["User Query"]
+    MESHDB["MeSH DB (DuckDB)\n30k descriptors\n200k synonyms"]
+    QE["Query Expander\nLLM keywords + MeSH lookup"]
+
+    USER --> QE
+    QE -.-> MESHDB
+
+    subgraph SEARCH["Hybrid Search + RRF Fusion"]
+        direction LR
+        S_DENSE["Dense\ncosine similarity"]
+        S_BM25["BM25\nkeyword match"]
+    end
+
+    QE --> SEARCH
+    MILVUS <--> SEARCH
+
+    RERANK["Cross-Encoder Reranker\nms-marco-MiniLM-L-6-v2"]
+    SEARCH --> RERANK
+
+    %% ── RAG ──
+    PROMPT["Prompt Builder\nquery + top-k abstracts"]
+    LLM["LLM via LiteLLM\nGPT-4o-mini"]
+
+    RERANK --> PROMPT --> LLM
+
+    %% ── Guardrails ──
+    subgraph GUARD["Output Guardrails"]
+        direction LR
+        G1["Citation\nGrounding"]
+        G2["Hallucination\nDetection"]
+        G3["MeSH Term\nValidation"]
+        G4["Medical\nDisclaimer"]
+    end
+
+    LLM --> GUARD
+    G3 -.-> MESHDB
+
+    %% ── API ──
+    subgraph API["FastAPI Backend"]
+        direction LR
+        API_ASK["POST /ask\nRAG pipeline"]
+        API_SEARCH["POST /search\nvector search"]
+        API_HEALTH["GET /health"]
+    end
+
+    GUARD --> API_ASK
+    RERANK -.-> API_SEARCH
+
+    %% ── Frontend ──
+    subgraph FRONTEND["React Frontend"]
+        direction LR
+        CHAT["Chat Panel"]
+        RESULTS["Results Panel"]
+        FILTERS["Filter Panel\nyear / top_k / mode"]
+    end
+
+    API <-->|REST| FRONTEND
+
+    %% ── Future: Multi-Agent (dashed) ──
+    subgraph AGENTS["Multi-Agent Analysis Layer (Future)"]
+        direction LR
+        A1["Retrieval\nAgent"]
+        A2["Methodology\nCritic"]
+        A3["Statistical\nReviewer"]
+        A4["Clinical\nApplicability"]
+        A5["Summarization\nAgent"]
+    end
+
+    GUARD -.->|future| AGENTS
+
+    %% ── Evaluation (side) ──
+    subgraph EVAL["Evaluation Suite (DeepEval)"]
+        direction LR
+        E1["Faithfulness"]
+        E2["Answer Relevancy"]
+        E3["Contextual Precision"]
+        E4["Contextual Recall"]
+    end
+
+    LLM -.->|offline| EVAL
+
+    %% ── Styles ──
+    classDef data fill:#1e3a2f,stroke:#6bba75,color:#fff
+    classDef store fill:#0d3b66,stroke:#3a86ff,color:#fff
+    classDef query fill:#2d1b4e,stroke:#8338ec,color:#fff
+    classDef rag fill:#1b4332,stroke:#52b788,color:#fff
+    classDef guard fill:#5c2018,stroke:#e76f51,color:#fff
+    classDef api fill:#3d2c1e,stroke:#f4a261,color:#fff
+    classDef ui fill:#1a3a4a,stroke:#00b4d8,color:#fff
+    classDef future fill:#1a1a2e,stroke:#555,stroke-dasharray: 5 5,color:#888
+    classDef eval fill:#2a2a2a,stroke:#aaa,stroke-dasharray: 3 3,color:#ccc
+    classDef mesh fill:#2a3a2a,stroke:#8ab88a,color:#fff
+
+    class JSONL,LOADER,CHUNKER,EMBEDDER data
+    class MILVUS,DENSE,BM25,SCALAR store
+    class USER,QE,RERANK,SEARCH,S_DENSE,S_BM25 query
+    class PROMPT,LLM rag
+    class GUARD,G1,G2,G3,G4 guard
+    class API,API_ASK,API_SEARCH,API_HEALTH api
+    class FRONTEND,CHAT,RESULTS,FILTERS ui
+    class AGENTS,A1,A2,A3,A4,A5 future
+    class EVAL,E1,E2,E3,E4 eval
+    class MESHDB mesh
