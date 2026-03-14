@@ -45,3 +45,50 @@ def test_ask_returns_answer(mock_ask, client):
 def test_ask_requires_query(client):
     response = client.post("/ask", json={})
     assert response.status_code == 422
+
+
+@patch("src.api.routes.ask.ask_stream")
+def test_ask_stream_returns_sse(mock_ask_stream, client):
+    mock_ask_stream.return_value = iter([
+        {"event": "token", "data": {"text": "Hello"}},
+        {"event": "token", "data": {"text": " world"}},
+        {"event": "done", "data": {
+            "citations": [{"pmid": "123", "title": "Test", "journal": "Nature", "year": 2023, "relevance_score": 0.95}],
+            "warnings": [],
+            "disclaimer": "Disclaimer.",
+            "is_grounded": True,
+        }},
+    ])
+
+    response = client.post("/ask", json={"query": "test", "stream": True})
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+
+    body = response.text
+    assert "event: token" in body
+    assert '"text": "Hello"' in body or '"text":"Hello"' in body
+    assert "event: done" in body
+    assert '"citations"' in body
+
+
+@patch("src.api.routes.ask.ask_stream")
+def test_ask_stream_sse_headers(mock_ask_stream, client):
+    mock_ask_stream.return_value = iter([
+        {"event": "done", "data": {"citations": [], "warnings": [], "disclaimer": "", "is_grounded": True}},
+    ])
+
+    response = client.post("/ask", json={"query": "test", "stream": True})
+    assert response.headers.get("cache-control") == "no-cache"
+
+
+@patch("src.api.routes.ask.rag_ask")
+def test_ask_stream_false_returns_json(mock_ask, client):
+    """stream=false (default) should still return JSON."""
+    mock_ask.return_value = ValidatedResponse(
+        answer="Test answer.", citations=[], query="test",
+        warnings=[], disclaimer="Disclaimer.", is_grounded=True,
+    )
+    response = client.post("/ask", json={"query": "test", "stream": False})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["answer"] == "Test answer."
