@@ -164,10 +164,15 @@ Since `API_BASE` defaults to `""` (relative), the built frontend calls `/ask` on
 - Monospace accents for PMIDs and scores
 - Minimal, functional — POC quality
 
-## Out of Scope
+## Out of Scope (not needed)
 
 - Authentication
-- Responsive/mobile layout
-- Dark/light mode toggle (dark only)
-- SSR, routing, complex state management
-- Streaming responses
+- SSR (single page, no SEO requirement)
+- Dark/light mode toggle (dark fixed)
+
+## Future Extensions (not in initial version, but designed for easy addition)
+
+- **Streaming responses (SSE)**: API client is isolated in `lib/api.ts`. Add an `askStream()` function that uses `EventSource` / `fetch` with readable stream. `MessageBubble` would accept incremental text. Backend needs `StreamingResponse` on `/ask/stream` endpoint.
+- **Routing**: Add `react-router-dom` if URL sharing or multi-page navigation is needed. Current component structure is already page-like (`ChatPanel`, `ResultsPanel`).
+- **State management**: Upgrade to `zustand` or `jotai` if cross-component state (e.g. multi-agent panels) becomes complex. Current `useState` in `App.tsx` is the single coordination point — easy to extract.
+- **Responsive/mobile layout**: Tailwind breakpoints on the 2-column grid → stack vertically on small screens.
