@@ -1,121 +1,119 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import { ChatPanel } from "./components/ChatPanel";
+import { FilterPanel } from "./components/FilterPanel";
+import { ResultsPanel } from "./components/ResultsPanel";
+import { askQuery, searchQuery } from "./lib/api";
+import type {
+  Citation,
+  Filters,
+  Message,
+  Mode,
+  SearchResult,
+} from "./types";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [mode, setMode] = useState<Mode>("ask");
+  const [filters, setFilters] = useState<Filters>({
+    top_k: 10,
+    search_mode: "dense",
+  });
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [citations, setCitations] = useState<Citation[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async (query: string) => {
+    const userMsg: Message = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: query,
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    setLoading(true);
+
+    try {
+      if (mode === "ask") {
+        const res = await askQuery({
+          query,
+          year_min: filters.year_min,
+          year_max: filters.year_max,
+          top_k: filters.top_k,
+          search_mode: filters.search_mode,
+        });
+        const assistantMsg: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: res.answer,
+          citations: res.citations,
+          warnings: res.warnings,
+          disclaimer: res.disclaimer,
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+        setCitations(res.citations);
+      } else {
+        const res = await searchQuery({
+          query,
+          year_min: filters.year_min,
+          year_max: filters.year_max,
+          top_k: filters.top_k,
+          search_mode: filters.search_mode,
+        });
+        const infoMsg: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: `Found ${res.total} results.`,
+        };
+        setMessages((prev) => [...prev, infoMsg]);
+        setSearchResults(res.results);
+      }
+    } catch (err) {
+      const errorMsg: Message = {
+        id: crypto.randomUUID(),
+        role: "error",
+        content:
+          err instanceof Error ? err.message : "Backend unavailable",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div className="h-screen flex flex-col bg-gray-950 text-gray-100">
+      <header className="border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-bold tracking-tight">
+          <span className="text-blue-400">PubMed</span> RAG
+        </h1>
+        <span className="text-xs text-gray-600">
+          {mode === "ask" ? "Ask Mode" : "Search Mode"} ·{" "}
+          {filters.search_mode}
+        </span>
+      </header>
+      <div className="flex-1 flex overflow-hidden">
+        <main className="flex-1 flex flex-col min-w-0">
+          <ChatPanel
+            messages={messages}
+            loading={loading}
+            onSend={handleSend}
+          />
+        </main>
+        <aside className="w-80 border-l border-gray-800 p-4 overflow-y-auto space-y-4">
+          <FilterPanel
+            mode={mode}
+            filters={filters}
+            onModeChange={setMode}
+            onFiltersChange={setFilters}
+          />
+          <ResultsPanel
+            citations={citations}
+            searchResults={searchResults}
+            mode={mode}
+          />
+        </aside>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
