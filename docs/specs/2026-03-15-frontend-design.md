@@ -122,9 +122,20 @@ interface Warning {
 - Network errors: show "Backend unavailable" message
 - No loading spinner or health polling — simple inline status
 
-## Proxy
+## API Base URL
 
-Vite dev server proxies `/ask`, `/search`, `/health` to `http://localhost:8000` to avoid CORS during development.
+All API calls go through a single `API_BASE` constant so the backend URL is trivially swappable:
+
+```typescript
+// lib/api.ts
+const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+// "" = relative path (same origin) — works with Vite proxy AND when served by FastAPI
+// "http://localhost:8000" = explicit backend URL for standalone dev
+```
+
+All fetch calls use `${API_BASE}/ask`, `${API_BASE}/search`, etc.
+
+### Development (Vite proxy)
 
 ```typescript
 // vite.config.ts
@@ -136,6 +147,16 @@ server: {
   }
 }
 ```
+
+### Production (FastAPI serves built frontend)
+
+```python
+# backend: mount dist/ as static files
+from fastapi.staticfiles import StaticFiles
+app.mount("/", StaticFiles(directory="dist", html=True), name="frontend")
+```
+
+Since `API_BASE` defaults to `""` (relative), the built frontend calls `/ask` on the same origin — no config change needed.
 
 ## Style
 
