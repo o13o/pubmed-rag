@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     # Phase B: Guardrails
     guardrails_enabled: bool = True
 
+    # Observability: LangFuse
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+    langfuse_host: str = "https://cloud.langfuse.com"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
