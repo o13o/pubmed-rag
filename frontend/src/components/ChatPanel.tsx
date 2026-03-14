@@ -35,7 +35,7 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
-        {loading && (
+        {loading && messages.length > 0 && messages[messages.length - 1].role !== "assistant" && (
           <div className="flex justify-start mb-4">
             <div className="bg-gray-800 text-gray-400 rounded-lg px-4 py-2">
               Thinking...
