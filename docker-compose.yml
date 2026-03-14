@@ -60,6 +60,33 @@ services:
       minio:
         condition: service_healthy
 
+  backend:
+    container_name: pubmed-rag-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      MILVUS_HOST: milvus
+      MILVUS_PORT: "19530"
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      MESH_DB_PATH: /app/data/mesh.duckdb
+      RERANKER_TYPE: ${RERANKER_TYPE:-cross_encoder}
+    volumes:
+      - ./backend/data:/app/data
+    depends_on:
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 volumes:
   etcd_data:
   minio_data:
