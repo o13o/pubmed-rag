@@ -39,3 +39,52 @@ def test_llm_client_uses_configured_model():
 def test_llm_client_default_model():
     client = LLMClient()
     assert client.model == "gpt-4o-mini"
+
+
+def test_llm_client_complete_stream():
+    with patch("src.shared.llm.litellm.completion") as mock_completion:
+        # Simulate streaming chunks
+        chunk1 = MagicMock()
+        chunk1.choices = [MagicMock(delta=MagicMock(content="Hello"))]
+        chunk1.usage = None
+
+        chunk2 = MagicMock()
+        chunk2.choices = [MagicMock(delta=MagicMock(content=" world"))]
+        chunk2.usage = None
+
+        chunk3 = MagicMock()
+        chunk3.choices = [MagicMock(delta=MagicMock(content=None))]
+        chunk3.usage = MagicMock(total_tokens=25)
+
+        mock_completion.return_value = iter([chunk1, chunk2, chunk3])
+
+        client = LLMClient(model="gpt-4o-mini")
+        chunks = list(client.complete_stream(
+            system_prompt="You are helpful.",
+            user_prompt="Hello",
+        ))
+
+    assert chunks == ["Hello", " world"]
+    call_kwargs = mock_completion.call_args[1]
+    assert call_kwargs["stream"] is True
+    assert call_kwargs["stream_options"] == {"include_usage": True}
+
+
+def test_llm_client_complete_stream_handles_empty_choices():
+    with patch("src.shared.llm.litellm.completion") as mock_completion:
+        chunk_empty = MagicMock()
+        chunk_empty.choices = []
+        chunk_empty.usage = None
+
+        chunk_normal = MagicMock()
+        chunk_normal.choices = [MagicMock(delta=MagicMock(content="ok"))]
+        chunk_normal.usage = None
+
+        mock_completion.return_value = iter([chunk_empty, chunk_normal])
+
+        client = LLMClient()
+        chunks = list(client.complete_stream(
+            system_prompt="sys", user_prompt="usr",
+        ))
+
+    assert chunks == ["ok"]
