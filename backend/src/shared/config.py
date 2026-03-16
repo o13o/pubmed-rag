@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # Phase B: Guardrails
     guardrails_enabled: bool = True
 
+    # Deployment mode: "monolith" (default) or "microservice"
+    deploy_mode: str = "monolith"
+    search_service_url: str = "http://localhost:8001"
+
     # Observability: LangFuse
     langfuse_public_key: str = ""
     langfuse_secret_key: str = ""

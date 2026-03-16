@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pymilvus import Collection, connections
 
 from src.api.routes import analyze, ask, health, search
+from src.retrieval.client import LocalSearchClient, RemoteSearchClient
 from src.retrieval.reranker import get_reranker
 from src.shared.config import get_settings
 from src.shared.llm import LLMClient
@@ -34,10 +35,16 @@ async def lifespan(app: FastAPI):
         llm=llm if settings.reranker_type == "llm" else None,
     )
 
+    if settings.deploy_mode == "microservice":
+        search_client = RemoteSearchClient(settings.search_service_url)
+    else:
+        search_client = LocalSearchClient(collection)
+
     app.state.collection = collection
     app.state.llm = llm
     app.state.mesh_db = mesh_db
     app.state.reranker = reranker
+    app.state.search_client = search_client
     app.state.settings = settings
 
     logger.info("API started: collection=%s", settings.milvus_collection)
