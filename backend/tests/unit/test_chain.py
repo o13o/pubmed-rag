@@ -129,9 +129,22 @@ def test_ask_stream_yields_token_and_done_events(mock_expander_cls):
         guardrails_enabled=True,
     ))
 
-    # Should have 2 token events + 1 done event
+    # Should have 1 citations + 2 token + 1 done event
+    event_types = [e["event"] for e in events]
+    citations_events = [e for e in events if e["event"] == "citations"]
     token_events = [e for e in events if e["event"] == "token"]
     done_events = [e for e in events if e["event"] == "done"]
+
+    # citations event must come before first token
+    assert event_types.index("citations") < event_types.index("token")
+
+    # citations event contents
+    assert len(citations_events) == 1
+    cit_data = citations_events[0]["data"]
+    assert len(cit_data["citations"]) == 1
+    assert cit_data["citations"][0]["pmid"] == "111"
+    assert len(cit_data["search_results"]) == 1
+    assert cit_data["search_results"][0]["abstract_text"] == "Abstract about cancer treatment."
 
     assert len(token_events) == 2
     assert token_events[0]["data"]["text"] == "Based on "

@@ -3,6 +3,7 @@ import type { AgentResult } from "../types";
 interface Props {
   agentResults: AgentResult[];
   loading: boolean;
+  totalAgents?: number;
 }
 
 const SEVERITY_COLORS = {
@@ -38,7 +39,7 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
-export function AgentResultsPanel({ agentResults, loading }: Props) {
+export function AgentResultsPanel({ agentResults, loading, totalAgents }: Props) {
   if (!loading && agentResults.length === 0) {
     return null;
   }
@@ -47,8 +48,8 @@ export function AgentResultsPanel({ agentResults, loading }: Props) {
     <div className="bg-gray-900 rounded-lg p-4">
       <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
         Agent Analysis{" "}
-        {loading
-          ? `(${agentResults.length}/8...)`
+        {loading && totalAgents
+          ? `(${agentResults.length}/${totalAgents}...)`
           : `(${agentResults.length})`}
       </h3>
       <div className="space-y-3">

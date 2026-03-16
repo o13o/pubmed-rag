@@ -14,6 +14,17 @@ import type {
   SSEDoneEvent,
 } from "./types";
 
+const AGENT_NAMES = [
+  "retrieval",
+  "methodology_critic",
+  "statistical_reviewer",
+  "clinical_applicability",
+  "summarization",
+  "conflicting_findings",
+  "trend_analysis",
+  "knowledge_graph",
+];
+
 function App() {
   const [mode, setMode] = useState<Mode>("ask");
   const [filters, setFilters] = useState<Filters>({
@@ -175,63 +186,62 @@ function App() {
     }
   };
 
-  const AGENT_NAMES = [
-    "retrieval",
-    "methodology_critic",
-    "statistical_reviewer",
-    "clinical_applicability",
-    "summarization",
-    "conflicting_findings",
-    "trend_analysis",
-    "knowledge_graph",
-  ];
-
   const handleAnalyze = async () => {
     if (searchResults.length === 0 && citations.length === 0) return;
     setAnalyzing(true);
     setAgentResults([]);
 
-    const results: SearchResult[] =
-      searchResults.length > 0
-        ? searchResults
-        : citations.map((c) => ({
-            pmid: c.pmid,
-            title: c.title,
-            abstract_text: "",
-            score: c.relevance_score,
-            year: c.year,
-            journal: c.journal,
-            mesh_terms: [],
-          }));
-    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-    const query = lastUserMsg?.content ?? "";
+    try {
+      const results: SearchResult[] =
+        searchResults.length > 0
+          ? searchResults
+          : citations.map((c) => ({
+              pmid: c.pmid,
+              title: c.title,
+              abstract_text: "",
+              score: c.relevance_score,
+              year: c.year,
+              journal: c.journal,
+              mesh_terms: [],
+            }));
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+      const query = lastUserMsg?.content ?? "";
 
-    // Run agents in batches of 3 to avoid API rate limits
-    const BATCH_SIZE = 3;
-    for (let i = 0; i < AGENT_NAMES.length; i += BATCH_SIZE) {
-      const batch = AGENT_NAMES.slice(i, i + BATCH_SIZE);
-      const promises = batch.map(async (agentName) => {
-        try {
-          const res = await analyzeQuery({ query, results, agents: [agentName] });
-          setAgentResults((prev) => [...prev, ...res.agent_results]);
-        } catch (err) {
-          console.error(`Agent ${agentName} failed:`, err);
-          setAgentResults((prev) => [
-            ...prev,
-            {
-              agent_name: agentName,
-              summary: `Failed: ${err instanceof Error ? err.message : "Unknown error"}`,
-              findings: [],
-              confidence: 0,
-              score: null,
-              details: null,
-            },
-          ]);
-        }
-      });
-      await Promise.all(promises);
+      // Run agents in batches of 3 to avoid API rate limits
+      const BATCH_SIZE = 3;
+      for (let i = 0; i < AGENT_NAMES.length; i += BATCH_SIZE) {
+        const batch = AGENT_NAMES.slice(i, i + BATCH_SIZE);
+        const promises = batch.map(async (agentName) => {
+          try {
+            const res = await analyzeQuery({ query, results, agents: [agentName] });
+            setAgentResults((prev) => [...prev, ...res.agent_results]);
+          } catch (err) {
+            console.error(`Agent ${agentName} failed:`, err);
+            setAgentResults((prev) => [
+              ...prev,
+              {
+                agent_name: agentName,
+                summary: `Failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+                findings: [],
+                confidence: 0,
+                score: null,
+                details: null,
+              },
+            ]);
+          }
+        });
+        await Promise.all(promises);
+      }
+    } catch (err) {
+      const errorMsg: Message = {
+        id: crypto.randomUUID(),
+        role: "error",
+        content: err instanceof Error ? err.message : "Analysis failed",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setAnalyzing(false);
     }
-    setAnalyzing(false);
   };
 
   return (
@@ -274,7 +284,7 @@ function App() {
               {analyzing ? "Analyzing..." : "Analyze with Agents"}
             </button>
           )}
-          <AgentResultsPanel agentResults={agentResults} loading={analyzing} />
+          <AgentResultsPanel agentResults={agentResults} loading={analyzing} totalAgents={AGENT_NAMES.length} />
           <ResultsPanel
             citations={citations}
             searchResults={searchResults}
