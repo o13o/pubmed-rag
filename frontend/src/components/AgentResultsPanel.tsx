@@ -39,25 +39,17 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 export function AgentResultsPanel({ agentResults, loading }: Props) {
-  if (loading) {
-    return (
-      <div className="bg-gray-900 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          Agent Analysis
-        </h3>
-        <p className="text-xs text-gray-500 animate-pulse">Analyzing...</p>
-      </div>
-    );
-  }
-
-  if (agentResults.length === 0) {
+  if (!loading && agentResults.length === 0) {
     return null;
   }
 
   return (
     <div className="bg-gray-900 rounded-lg p-4">
       <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-        Agent Analysis ({agentResults.length})
+        Agent Analysis{" "}
+        {loading
+          ? `(${agentResults.length}/8...)`
+          : `(${agentResults.length})`}
       </h3>
       <div className="space-y-3">
         {agentResults.map((r) => (
@@ -92,6 +84,11 @@ export function AgentResultsPanel({ agentResults, loading }: Props) {
             )}
           </div>
         ))}
+        {loading && (
+          <p className="text-xs text-gray-500 animate-pulse pt-1">
+            Running remaining agents...
+          </p>
+        )}
       </div>
     </div>
   );

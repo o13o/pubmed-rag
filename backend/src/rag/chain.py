@@ -143,7 +143,10 @@ def ask_stream(
         ]
         yield {
             "event": "citations",
-            "data": {"citations": [c.model_dump() for c in citations]},
+            "data": {
+                "citations": [c.model_dump() for c in citations],
+                "search_results": [r.model_dump() for r in results],
+            },
         }
 
         # 4. Build prompt

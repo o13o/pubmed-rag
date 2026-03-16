@@ -112,22 +112,24 @@ Check the answer against the source abstracts and return a JSON array of issues.
 
     def _mesh_validate(self, answer: str) -> list[GuardrailWarning]:
         """Check medical terms in the answer against MeSH vocabulary."""
-        warnings = []
         # Extract capitalized multi-word terms that look medical
         terms = re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b", answer)
-        # Deduplicate
+        # Deduplicate and filter short/common words
         seen = set()
+        not_found = []
         for term in terms:
             if term in seen or len(term) < 4:
                 continue
             seen.add(term)
             if not self.mesh_db.validate_term(term):
-                warnings.append(
-                    GuardrailWarning(
-                        check="terminology",
-                        severity="warning",
-                        message=f"Term '{term}' not found in MeSH vocabulary",
-                        span=term,
-                    )
-                )
-        return warnings
+                not_found.append(term)
+        if not not_found:
+            return []
+        return [
+            GuardrailWarning(
+                check="terminology",
+                severity="warning",
+                message=f"Not found in MeSH: {', '.join(not_found)}",
+                span=", ".join(not_found),
+            )
+        ]

@@ -6,6 +6,7 @@ import type {
   Citation,
   SearchRequest,
   SearchResponse,
+  SearchResult,
   SSEDoneEvent,
   TranscribeResponse,
 } from "../types";
@@ -44,7 +45,7 @@ export async function askQueryStream(
   onDone: (data: SSEDoneEvent) => void,
   onError: (error: Error) => void,
   signal?: AbortSignal,
-  onCitations?: (citations: Citation[]) => void,
+  onCitations?: (data: { citations: Citation[]; search_results?: SearchResult[] }) => void,
 ): Promise<void> {
   let res: Response;
   try {
@@ -99,7 +100,7 @@ export async function askQueryStream(
             onToken((data as { text: string }).text);
           } else if (currentEvent === "citations") {
             if (onCitations) {
-              onCitations((data as { citations: Citation[] }).citations);
+              onCitations(data as { citations: Citation[]; search_results?: SearchResult[] });
             }
           } else if (currentEvent === "done") {
             onDone(data as SSEDoneEvent);

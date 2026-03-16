@@ -138,8 +138,11 @@ function App() {
           },
           abortRef.current.signal,
           // onCitations — display results immediately before LLM starts
-          (earlyCitations) => {
+          ({ citations: earlyCitations, search_results }) => {
             setCitations(earlyCitations);
+            if (search_results) {
+              setSearchResults(search_results);
+            }
           },
         );
       } else {
@@ -172,41 +175,63 @@ function App() {
     }
   };
 
+  const AGENT_NAMES = [
+    "retrieval",
+    "methodology_critic",
+    "statistical_reviewer",
+    "clinical_applicability",
+    "summarization",
+    "conflicting_findings",
+    "trend_analysis",
+    "knowledge_graph",
+  ];
+
   const handleAnalyze = async () => {
     if (searchResults.length === 0 && citations.length === 0) return;
     setAnalyzing(true);
     setAgentResults([]);
-    try {
-      // In search mode, use searchResults directly.
-      // In ask mode, searchResults may be empty — use citations as a fallback.
-      // Note: citations lack abstract_text, so agent analysis will be limited
-      // to title/metadata. For full analysis, use search mode first.
-      const results: SearchResult[] =
-        searchResults.length > 0
-          ? searchResults
-          : citations.map((c) => ({
-              pmid: c.pmid,
-              title: c.title,
-              abstract_text: "",
-              score: c.relevance_score,
-              year: c.year,
-              journal: c.journal,
-              mesh_terms: [],
-            }));
-      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-      const query = lastUserMsg?.content ?? "";
-      const res = await analyzeQuery({ query, results });
-      setAgentResults(res.agent_results);
-    } catch (err) {
-      const errorMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "error",
-        content: err instanceof Error ? err.message : "Analysis failed",
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setAnalyzing(false);
+
+    const results: SearchResult[] =
+      searchResults.length > 0
+        ? searchResults
+        : citations.map((c) => ({
+            pmid: c.pmid,
+            title: c.title,
+            abstract_text: "",
+            score: c.relevance_score,
+            year: c.year,
+            journal: c.journal,
+            mesh_terms: [],
+          }));
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    const query = lastUserMsg?.content ?? "";
+
+    // Run agents in batches of 3 to avoid API rate limits
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < AGENT_NAMES.length; i += BATCH_SIZE) {
+      const batch = AGENT_NAMES.slice(i, i + BATCH_SIZE);
+      const promises = batch.map(async (agentName) => {
+        try {
+          const res = await analyzeQuery({ query, results, agents: [agentName] });
+          setAgentResults((prev) => [...prev, ...res.agent_results]);
+        } catch (err) {
+          console.error(`Agent ${agentName} failed:`, err);
+          setAgentResults((prev) => [
+            ...prev,
+            {
+              agent_name: agentName,
+              summary: `Failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+              findings: [],
+              confidence: 0,
+              score: null,
+              details: null,
+            },
+          ]);
+        }
+      });
+      await Promise.all(promises);
     }
+    setAnalyzing(false);
   };
 
   return (

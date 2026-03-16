@@ -1,8 +1,8 @@
 """Conflicting Findings Agent — identifies contradictory conclusions across studies."""
 
-import json
 import logging
 
+from src.agents import parse_llm_json
 from src.shared.llm import LLMClient
 from src.shared.models import AgentResult, Finding, SearchResult
 
@@ -48,7 +48,7 @@ class ConflictingFindingsAgent:
 
         try:
             raw = self.llm.complete(system_prompt=SYSTEM_PROMPT, user_prompt=user_prompt)
-            data = json.loads(raw.strip())
+            data = parse_llm_json(raw)
             return AgentResult(
                 agent_name=self.name,
                 summary=data.get("summary", ""),
