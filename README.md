@@ -69,6 +69,9 @@ npm run dev
 | `SEARCH_MODE` | `dense` | Search mode: `dense` or `hybrid` |
 | `RERANKER_TYPE` | `cross_encoder` | Reranker: `none`, `cross_encoder`, or `llm` |
 | `MESH_DB_PATH` | `data/mesh.duckdb` | Path to MeSH DuckDB database |
+| `LANGFUSE_PUBLIC_KEY` | (optional) | LangFuse public key for observability |
+| `LANGFUSE_SECRET_KEY` | (optional) | LangFuse secret key |
+| `LANGFUSE_HOST` | `https://cloud.langfuse.com` | LangFuse server URL |
 
 ## Data Ingestion
 
@@ -173,6 +176,17 @@ DISCLAIMER: This information is for research purposes only and should not
 be used as medical advice. Always consult qualified healthcare professionals.
 ```
 
+## Token Usage Tracking (LangFuse)
+
+All LLM calls (query expansion, answer generation, guardrail validation) are automatically traced via LiteLLM's LangFuse integration. When `LANGFUSE_PUBLIC_KEY` is set, every call logs:
+
+- **Token usage** — prompt tokens, completion tokens, total tokens
+- **Latency** — per-call and end-to-end
+- **Cost** — estimated cost per model
+- **Trace view** — full RAG pipeline trace with parent/child spans
+
+To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LANGFUSE_HOST` in your `.env`. Then view traces at your LangFuse dashboard.
+
 ## Testing
 
 ```bash
@@ -234,5 +248,5 @@ capstone/
 
 - [ ] Multi-Agent analysis layer (Retrieval, Methodology Critic, Statistical Reviewer, Clinical Applicability, Summarization agents)
 - [ ] Update architecture diagram after multi-agent implementation (change dashed lines to solid in `docs/architecture.mmd`)
-- [ ] Streaming responses (SSE) for `/ask` endpoint
-- [ ] Token usage tracking
+- [x] Streaming responses (SSE) for `/ask` endpoint
+- [x] Token usage tracking (via LangFuse — all LLM calls automatically traced with token counts, latency, and cost)

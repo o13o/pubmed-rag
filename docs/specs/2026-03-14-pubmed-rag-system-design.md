@@ -307,6 +307,7 @@ D-3: Production deployment config
 | LLM call failures | Timeout (30s default). Graceful fallback: return retrieved abstracts without LLM summary. |
 | Milvus unavailability | Health check at startup. Return 503 at API level. |
 | Logging | Python `logging` with structured JSON format. Log levels: DEBUG for dev, INFO for prod. Key events: ingestion progress, query latency, LLM token usage. |
+| Token usage tracking | LiteLLM + LangFuse integration. All LLM calls (`complete()`, `complete_stream()`) are automatically traced when `LANGFUSE_PUBLIC_KEY` is set. Tracks prompt/completion/total tokens, latency, and estimated cost per call. Viewable in the LangFuse dashboard. |
 
 ## 12. Testing Strategy
 

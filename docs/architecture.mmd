@@ -88,6 +88,10 @@ flowchart TD
 
     GUARD -.->|future| AGENTS
 
+    %% ── Observability ──
+    LANGFUSE["LangFuse\nToken Usage · Latency · Cost"]
+    LLM -.->|auto-trace| LANGFUSE
+
     %% ── Evaluation (side) ──
     subgraph EVAL["Evaluation Suite (DeepEval)"]
         direction LR
@@ -110,6 +114,7 @@ flowchart TD
     classDef future fill:#1a1a2e,stroke:#555,stroke-dasharray: 5 5,color:#888
     classDef eval fill:#2a2a2a,stroke:#aaa,stroke-dasharray: 3 3,color:#ccc
     classDef mesh fill:#2a3a2a,stroke:#8ab88a,color:#fff
+    classDef obs fill:#3a2a3a,stroke:#c084fc,color:#fff
 
     class JSONL,LOADER,CHUNKER,EMBEDDER data
     class MILVUS,DENSE,BM25,SCALAR store
@@ -121,3 +126,4 @@ flowchart TD
     class AGENTS,A1,A2,A3,A4,A5 future
     class EVAL,E1,E2,E3,E4 eval
     class MESHDB mesh
+    class LANGFUSE obs
