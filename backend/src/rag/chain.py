@@ -130,17 +130,7 @@ def ask_stream(
         results = reranker.rerank(query, results, top_k=filters.top_k)
         logger.info("After reranking: %d results", len(results))
 
-        # 4. Build prompt
-        system_prompt = build_system_prompt()
-        user_prompt = build_user_prompt(query, results)
-
-        # 5. Stream LLM tokens
-        full_answer = ""
-        for chunk in llm.complete_stream(system_prompt=system_prompt, user_prompt=user_prompt):
-            full_answer += chunk
-            yield {"event": "token", "data": {"text": chunk}}
-
-        # 6. Build citations
+        # 3.5 Emit citations early (before LLM generation)
         citations = [
             Citation(
                 pmid=r.pmid,
@@ -151,8 +141,22 @@ def ask_stream(
             )
             for r in results
         ]
+        yield {
+            "event": "citations",
+            "data": {"citations": [c.model_dump() for c in citations]},
+        }
 
-        # 7. Guardrails
+        # 4. Build prompt
+        system_prompt = build_system_prompt()
+        user_prompt = build_user_prompt(query, results)
+
+        # 5. Stream LLM tokens
+        full_answer = ""
+        for chunk in llm.complete_stream(system_prompt=system_prompt, user_prompt=user_prompt):
+            full_answer += chunk
+            yield {"event": "token", "data": {"text": chunk}}
+
+        # 6. Guardrails
         warnings = []
         disclaimer = ""
         is_grounded = True

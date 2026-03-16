@@ -3,6 +3,7 @@ import type {
   AnalyzeResponse,
   AskRequest,
   AskResponse,
+  Citation,
   SearchRequest,
   SearchResponse,
   SSEDoneEvent,
@@ -43,6 +44,7 @@ export async function askQueryStream(
   onDone: (data: SSEDoneEvent) => void,
   onError: (error: Error) => void,
   signal?: AbortSignal,
+  onCitations?: (citations: Citation[]) => void,
 ): Promise<void> {
   let res: Response;
   try {
@@ -95,6 +97,10 @@ export async function askQueryStream(
           }
           if (currentEvent === "token") {
             onToken((data as { text: string }).text);
+          } else if (currentEvent === "citations") {
+            if (onCitations) {
+              onCitations((data as { citations: Citation[] }).citations);
+            }
           } else if (currentEvent === "done") {
             onDone(data as SSEDoneEvent);
           } else if (currentEvent === "error") {

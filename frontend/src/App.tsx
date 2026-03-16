@@ -98,6 +98,10 @@ function App() {
             setLoading(false);
           },
           abortRef.current.signal,
+          // onCitations — display results immediately before LLM starts
+          (earlyCitations) => {
+            setCitations(earlyCitations);
+          },
         );
       } else {
         const res = await searchQuery({
