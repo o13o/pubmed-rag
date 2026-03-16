@@ -11,13 +11,16 @@ import pytest
 
 from deepeval import assert_test
 from deepeval.metrics import (
-    FaithfulnessMetric,
     AnswerRelevancyMetric,
     ContextualPrecisionMetric,
+    FaithfulnessMetric,
 )
 from deepeval.test_case import LLMTestCase
 
-from tests.eval.metrics.custom import CitationPresenceMetric, MedicalDisclaimerMetric
+from tests.eval.metrics.custom import (
+    CitationPresenceMetric,
+    MedicalDisclaimerMetric,
+)
 
 
 DATASET_PATH = Path(__file__).parent / "dataset.json"
@@ -26,7 +29,9 @@ DATASET_PATH = Path(__file__).parent / "dataset.json"
 METRICS = [
     FaithfulnessMetric(threshold=0.7, model="gpt-4o-mini"),
     AnswerRelevancyMetric(threshold=0.7, model="gpt-4o-mini"),
+    ContextualPrecisionMetric(threshold=0.7, model="gpt-4o-mini"),
     CitationPresenceMetric(threshold=0.5),
+    MedicalDisclaimerMetric(threshold=1.0),
 ]
 
 
@@ -76,8 +81,7 @@ def _run_rag_query(query: str) -> tuple[str, list[str]]:
         answer = f"{response.answer}\n\n{response.disclaimer}"
 
     # Re-fetch abstracts for context
-    from src.retrieval.search import search
-    results = search(query, collection, SearchFilters(top_k=settings.top_k))
+    results = search_client.search(query, SearchFilters(top_k=settings.top_k))
     context = [f"PMID: {r.pmid}\n{r.title}\n{r.abstract_text}" for r in results]
 
     mesh_db.close()
