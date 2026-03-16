@@ -402,7 +402,7 @@ capstone/
 │       ├── lib/api.ts              # API client (REST + SSE streaming)
 │       └── types/index.ts          # TypeScript type definitions
 ├── data_pipeline/                  # PubMed data download & sampling scripts
-└── loadtest/                       # Locust load testing (planned)
+└── loadtest/                       # Locust load testing
 ```
 
 ## Dataset
