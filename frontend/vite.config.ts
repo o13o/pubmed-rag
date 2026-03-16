@@ -9,6 +9,7 @@ export default defineConfig({
       "/ask": "http://localhost:8000",
       "/search": "http://localhost:8000",
       "/health": "http://localhost:8000",
+      "/analyze": "http://localhost:8000",
     },
   },
 });
