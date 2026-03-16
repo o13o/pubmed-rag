@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ChatPanel } from "./components/ChatPanel";
 import { FilterPanel } from "./components/FilterPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
@@ -27,6 +27,45 @@ function App() {
   const [agentResults, setAgentResults] = useState<AgentResult[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const dragging = useRef(false);
+
+  const handleMouseDown = useCallback(() => {
+    dragging.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      const newWidth = window.innerWidth - e.clientX;
+      setSidebarWidth(Math.max(200, Math.min(600, newWidth)));
+    };
+    const handleMouseUp = () => {
+      if (!dragging.current) return;
+      dragging.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  const handleClear = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setMessages([]);
+    setCitations([]);
+    setSearchResults([]);
+    setAgentResults([]);
+    setLoading(false);
+    setAnalyzing(false);
+  };
 
   const handleSend = async (query: string) => {
     const userMsg: Message = {
@@ -172,14 +211,10 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-100">
-      <header className="border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+      <header className="border-b border-gray-800 px-6 py-2">
         <h1 className="text-lg font-bold tracking-tight">
           <span className="text-blue-400">PubMed</span> RAG
         </h1>
-        <span className="text-xs text-gray-600">
-          {mode === "ask" ? "Ask Mode" : "Search Mode"} ·{" "}
-          {filters.search_mode}
-        </span>
       </header>
       <div className="flex-1 flex overflow-hidden">
         <main className="flex-1 flex flex-col min-w-0">
@@ -188,14 +223,23 @@ function App() {
             loading={loading}
             onSend={handleSend}
           />
-        </main>
-        <aside className="w-80 border-l border-gray-800 p-4 overflow-y-auto space-y-4">
           <FilterPanel
             mode={mode}
             filters={filters}
             onModeChange={setMode}
             onFiltersChange={setFilters}
+            onClear={handleClear}
+            showClear={messages.length > 0}
           />
+        </main>
+        <div
+          onMouseDown={handleMouseDown}
+          className="w-1 cursor-col-resize bg-gray-800 hover:bg-blue-500 transition-colors flex-shrink-0"
+        />
+        <aside
+          style={{ width: sidebarWidth }}
+          className="flex-shrink-0 p-4 overflow-y-auto space-y-4"
+        >
           {(searchResults.length > 0 || citations.length > 0) && (
             <button
               onClick={handleAnalyze}
