@@ -49,7 +49,7 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-2 space-y-2">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full text-gray-600">
             <p>Ask a question about medical research.</p>
