@@ -246,7 +246,7 @@ capstone/
 
 ## TODO
 
-- [ ] Multi-Agent analysis layer (Retrieval, Methodology Critic, Statistical Reviewer, Clinical Applicability, Summarization agents)
-- [ ] Update architecture diagram after multi-agent implementation (change dashed lines to solid in `docs/architecture.mmd`)
+- [x] Multi-Agent analysis layer (Retrieval, Methodology Critic, Statistical Reviewer, Clinical Applicability, Summarization agents)
+- [x] Update architecture diagram after multi-agent implementation (change dashed lines to solid in `docs/architecture.mmd`)
 - [x] Streaming responses (SSE) for `/ask` endpoint
 - [x] Token usage tracking (via LangFuse — all LLM calls automatically traced with token counts, latency, and cost)
