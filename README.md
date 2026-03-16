@@ -9,7 +9,8 @@ An AI-powered multimodal medical research retrieval and analysis system that all
 **Data flow:**
 
 ```
-User Query
+User Query (text, voice, or image)
+  → [if audio/image] Transcription (Whisper / GPT-4o-mini vision)
   → Input Guardrails (medical term validation)
   → Query Expansion (MeSH term enrichment via DuckDB)
   → Hybrid Retrieval (Dense + BM25 via RRF fusion in Milvus)
@@ -142,6 +143,7 @@ UI available at `http://localhost:5173`.
 | `POST` | `/ask` | Full RAG pipeline (supports SSE streaming via `stream: true`) |
 | `POST` | `/search` | Semantic/hybrid search with metadata filtering |
 | `POST` | `/analyze` | Multi-agent research analysis |
+| `POST` | `/transcribe` | Convert audio/image to text (Whisper / GPT-4o-mini vision) |
 
 ### Example: Ask (RAG Pipeline)
 
@@ -222,6 +224,29 @@ Response:
   ]
 }
 ```
+
+### Example: Transcribe (Multimodal Input)
+
+```bash
+# Audio file (voice recording)
+curl -X POST http://localhost:8000/transcribe \
+  -F "file=@recording.mp3"
+
+# Image file (research figure)
+curl -X POST http://localhost:8000/transcribe \
+  -F "file=@figure.png"
+```
+
+Response:
+
+```json
+{
+  "text": "What are the survival rates for stage 2 breast cancer treatment?",
+  "media_type": "audio"
+}
+```
+
+The returned text can then be used as input to `/ask` or `/search`. In the frontend, the transcribed text is automatically populated in the chat input for the user to review and submit.
 
 ### CLI Usage
 
@@ -309,6 +334,7 @@ uv run pytest tests/eval/test_rag_evaluation.py -v
 **Standard Metrics:**
 - **Faithfulness** — Is the answer grounded in retrieved context?
 - **Answer Relevancy** — Does the answer address the query?
+- **Contextual Precision** — Are relevant contexts ranked higher?
 
 **Custom Metrics:**
 - **Citation Presence** — Are PMID citations included in the response?
@@ -356,6 +382,8 @@ To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LAN
 | Agent Design | Independent agents, no inter-agent communication | Simple, testable, parallelizable; orchestration can be added later |
 | Guardrails | LLM-based grounding check + MeSH term validation | Catches hallucinations and unverified medical terms; adds one extra LLM call |
 | Streaming | Server-Sent Events (SSE) | Progressive token delivery to frontend; simpler than WebSockets for unidirectional flow |
+| Multimodal Input | Whisper (audio) + GPT-4o-mini vision (image) | Decoupled `/transcribe` endpoint; no changes to RAG pipeline |
+| Deployment | Modular monolith with Protocol-based abstraction | Single deploy for PoC; can split into microservices via env var switch (ADR-0003) |
 
 ## Project Structure
 
@@ -374,7 +402,7 @@ capstone/
 │   ├── pyproject.toml
 │   ├── src/
 │   │   ├── agents/                 # 8 specialized analysis agents + registry
-│   │   ├── api/                    # FastAPI routes (/ask, /search, /analyze, /health)
+│   │   ├── api/                    # FastAPI routes (/ask, /search, /analyze, /transcribe, /health)
 │   │   ├── guardrails/             # Input validation & output grounding checks
 │   │   ├── ingestion/              # Data loading, chunking, embedding, Milvus setup
 │   │   ├── retrieval/              # Hybrid search, query expansion, reranking
@@ -394,7 +422,7 @@ capstone/
 │   └── src/
 │       ├── App.tsx                 # Main app with Ask/Search/Analyze modes
 │       ├── components/
-│       │   ├── ChatPanel.tsx       # Chat interface with SSE streaming
+│       │   ├── ChatPanel.tsx       # Chat interface with SSE streaming + file upload
 │       │   ├── FilterPanel.tsx     # Search mode, year, top_k filters
 │       │   ├── ResultsPanel.tsx    # Citations & search results display
 │       │   ├── AgentResultsPanel.tsx # Agent analysis cards with score badges
