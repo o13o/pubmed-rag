@@ -23,10 +23,6 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
 
     # Startup
-    connections.connect("default", host=settings.milvus_host, port=str(settings.milvus_port))
-    collection = Collection(settings.milvus_collection)
-    collection.load()
-
     llm = LLMClient(model=settings.llm_model, timeout=settings.llm_timeout)
     mesh_db = MeSHDatabase(settings.mesh_db_path)
     reranker = get_reranker(
@@ -37,7 +33,11 @@ async def lifespan(app: FastAPI):
 
     if settings.deploy_mode == "microservice":
         search_client = RemoteSearchClient(settings.search_service_url)
+        collection = None
     else:
+        connections.connect("default", host=settings.milvus_host, port=str(settings.milvus_port))
+        collection = Collection(settings.milvus_collection)
+        collection.load()
         search_client = LocalSearchClient(collection)
 
     app.state.collection = collection
@@ -52,7 +52,8 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     mesh_db.close()
-    connections.disconnect("default")
+    if settings.deploy_mode != "microservice":
+        connections.disconnect("default")
     logger.info("API shutdown complete")
 
 

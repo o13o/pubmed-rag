@@ -5,9 +5,8 @@ import json
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from pymilvus import Collection
 
-from src.api.dependencies import get_collection, get_llm, get_mesh_db, get_reranker_dep, get_search_client
+from src.api.dependencies import get_llm, get_mesh_db, get_reranker_dep, get_search_client
 from src.rag.chain import ask as rag_ask, ask_stream
 from src.retrieval.client import SearchClient
 from src.retrieval.reranker import BaseReranker

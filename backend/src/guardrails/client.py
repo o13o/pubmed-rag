@@ -1,13 +1,16 @@
 """Guardrail client abstraction for monolith/microservice dual deployment.
 
 LocalGuardrailClient: runs validation in-process (monolith mode).
-RemoteGuardrailClient: placeholder for HTTP call (microservice mode).
+A RemoteGuardrailClient can be added when guardrails are extracted
+into a separate service.
 """
 
 from __future__ import annotations
 
 from typing import Protocol
 
+from src.shared.llm import LLMClient
+from src.shared.mesh_db import MeSHDatabase
 from src.shared.models import RAGResponse, SearchResult, ValidatedResponse
 
 
@@ -20,14 +23,12 @@ class GuardrailClient(Protocol):
 class LocalGuardrailClient:
     """Monolith mode — runs guardrails in-process."""
 
-    def __init__(self, llm, mesh_db) -> None:
-        self._llm = llm
-        self._mesh_db = mesh_db
+    def __init__(self, llm: LLMClient, mesh_db: MeSHDatabase) -> None:
+        from src.guardrails.output import GuardrailValidator
+
+        self._validator = GuardrailValidator(llm=llm, mesh_db=mesh_db)
 
     def validate(
         self, response: RAGResponse, results: list[SearchResult]
     ) -> ValidatedResponse:
-        from src.guardrails.output import GuardrailValidator
-
-        validator = GuardrailValidator(llm=self._llm, mesh_db=self._mesh_db)
-        return validator.validate(response, results)
+        return self._validator.validate(response, results)

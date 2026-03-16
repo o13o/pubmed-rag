@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import Protocol
 
-import httpx
 from pymilvus import Collection
 
 from src.shared.models import SearchFilters, SearchResult
@@ -38,6 +37,8 @@ class RemoteSearchClient:
         self._timeout = timeout
 
     def search(self, query: str, filters: SearchFilters) -> list[SearchResult]:
+        import httpx
+
         resp = httpx.post(
             f"{self._base_url}/search",
             json={"query": query, **filters.model_dump(exclude_none=True)},

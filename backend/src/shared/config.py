@@ -1,6 +1,7 @@
 """Application settings via pydantic-settings (env vars + .env)."""
 
 from functools import lru_cache
+from typing import Literal
 
 from pydantic_settings import BaseSettings
 
@@ -30,7 +31,7 @@ class Settings(BaseSettings):
     guardrails_enabled: bool = True
 
     # Deployment mode: "monolith" (default) or "microservice"
-    deploy_mode: str = "monolith"
+    deploy_mode: Literal["monolith", "microservice"] = "monolith"
     search_service_url: str = "http://localhost:8001"
 
     # Observability: LangFuse
