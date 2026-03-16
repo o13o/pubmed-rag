@@ -14,6 +14,15 @@ This ADR documents the current module boundaries, inter-module dependencies, and
 
 Deploy as a modular monolith for the capstone. Document the microservice migration path so the system can be decomposed when scaling requirements demand it.
 
+## Implementation Status
+
+The Protocol-based abstraction layer has been **implemented** — the codebase supports both deployment modes today:
+
+- `SearchClient` Protocol with `LocalSearchClient` (direct Milvus) and `RemoteSearchClient` (HTTP)
+- `GuardrailClient` Protocol with `LocalGuardrailClient` (in-process)
+- `DEPLOY_MODE=monolith` (default) uses local clients; `DEPLOY_MODE=microservice` uses remote clients
+- Switch is controlled by a single env var — no code changes needed
+
 ## Current Module Dependency Map
 
 ```
@@ -68,21 +77,7 @@ Key observation: **all modules depend on `shared`, but no module depends on anot
 
 ### What Requires Refactoring
 
-1. **`rag/chain.py` direct imports.** Currently, `chain.py` imports `retrieval.search` and `guardrails.output` directly. In a microservice setup, these become HTTP calls:
-
-   ```python
-   # Current (monolith)
-   from src.retrieval.search import search
-   results = search(query, collection, filters)
-
-   # Microservice version
-   results = await http_client.post(
-       "http://search-service/search",
-       json={"query": query, **filters.model_dump()}
-   )
-   ```
-
-   **Effort:** Replace 2 direct imports with HTTP client calls. The Pydantic models remain identical.
+1. **~~`rag/chain.py` direct imports.~~** ✅ **Done.** `chain.py` now depends on `SearchClient` and `GuardrailClient` protocols. Switching between local (direct Milvus) and remote (HTTP) is handled via `DEPLOY_MODE` env var.
 
 2. **`shared/` as a published package.** The `shared` module (models, config, LLM client) would need to be extracted into a shared Python package (e.g., `pubmed-rag-shared`) installed by each service. Alternatively, each service copies the subset of models it needs.
 
