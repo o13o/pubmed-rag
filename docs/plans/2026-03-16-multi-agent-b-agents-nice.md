@@ -64,6 +64,23 @@ def test_retrieval_returns_agent_result():
     assert isinstance(result, AgentResult)
     assert result.agent_name == "retrieval"
     assert result.score is None
+    assert result.confidence == 0.8
+
+
+def test_retrieval_handles_llm_failure():
+    from src.agents.retrieval import RetrievalAgent
+
+    mock_llm = MagicMock()
+    mock_llm.complete.side_effect = RuntimeError("LLM timeout")
+
+    agent = RetrievalAgent(llm=mock_llm)
+    result = agent.run("cancer treatment", _mock_results())
+
+    assert isinstance(result, AgentResult)
+    assert result.agent_name == "retrieval"
+    assert "failed" in result.summary.lower()
+    assert result.confidence == 0.0
+    assert result.score is None
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -148,12 +165,12 @@ class RetrievalAgent:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_retrieval.py -v`
-Expected: PASS
+Expected: ALL 2 PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/src/agents/retrieval.py backend/tests/unit/test_agent_retrieval.py
+cd capstone && git add backend/src/agents/retrieval.py backend/tests/unit/test_agent_retrieval.py
 git commit -m "feat(agents): implement RetrievalAgent"
 ```
 
@@ -208,6 +225,23 @@ def test_statistical_reviewer_returns_agent_result():
     assert isinstance(result, AgentResult)
     assert result.agent_name == "statistical_reviewer"
     assert result.score == 8
+    assert result.confidence == 0.7
+
+
+def test_statistical_reviewer_handles_llm_failure():
+    from src.agents.statistical_reviewer import StatisticalReviewerAgent
+
+    mock_llm = MagicMock()
+    mock_llm.complete.side_effect = RuntimeError("LLM timeout")
+
+    agent = StatisticalReviewerAgent(llm=mock_llm)
+    result = agent.run("cancer treatment", _mock_results())
+
+    assert isinstance(result, AgentResult)
+    assert result.agent_name == "statistical_reviewer"
+    assert "failed" in result.summary.lower()
+    assert result.confidence == 0.0
+    assert result.score is None
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -291,12 +325,12 @@ class StatisticalReviewerAgent:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_statistical.py -v`
-Expected: PASS
+Expected: ALL 2 PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/src/agents/statistical_reviewer.py backend/tests/unit/test_agent_statistical.py
+cd capstone && git add backend/src/agents/statistical_reviewer.py backend/tests/unit/test_agent_statistical.py
 git commit -m "feat(agents): implement StatisticalReviewerAgent"
 ```
 
@@ -307,7 +341,7 @@ git commit -m "feat(agents): implement StatisticalReviewerAgent"
 **Files:**
 - Create: `backend/tests/unit/test_agent_registry.py`
 
-**Note:** This task requires Plan A to be completed (all 5 agents must exist).
+**Note:** This task requires Plan A to be completed (all 5 agents must exist). These are integration tests over already-existing code — tests pass immediately because all agents and registry already exist. No "verify failure" step is needed.
 
 - [ ] **Step 1: Write registry tests**
 
@@ -341,6 +375,7 @@ def test_get_agents_filters_by_name():
 
 
 def test_get_agents_empty_list():
+    """names=[] (explicit empty) returns no agents, unlike names=None (return all)."""
     llm = MagicMock()
     agents = get_agents(llm=llm, names=[])
     assert len(agents) == 0
@@ -359,6 +394,6 @@ Expected: ALL PASS
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/tests/unit/test_agent_registry.py
+cd capstone && git add backend/tests/unit/test_agent_registry.py
 git commit -m "test(agents): add registry integration tests"
 ```

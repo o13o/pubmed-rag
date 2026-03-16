@@ -68,6 +68,7 @@ def test_methodology_critic_returns_agent_result():
     assert isinstance(result, AgentResult)
     assert result.agent_name == "methodology_critic"
     assert result.score == 6
+    assert result.confidence == 0.8
     assert len(result.findings) == 2
     mock_llm.complete.assert_called_once()
 
@@ -85,6 +86,7 @@ def test_methodology_critic_handles_llm_failure():
     assert result.agent_name == "methodology_critic"
     assert "failed" in result.summary.lower()
     assert result.confidence == 0.0
+    assert result.score is None
 
 
 def test_methodology_critic_handles_invalid_json():
@@ -186,7 +188,7 @@ Expected: ALL 3 PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/src/agents/methodology_critic.py backend/tests/unit/test_agent_methodology.py
+cd capstone && git add backend/src/agents/methodology_critic.py backend/tests/unit/test_agent_methodology.py
 git commit -m "feat(agents): implement MethodologyCriticAgent"
 ```
 
@@ -241,6 +243,23 @@ def test_clinical_applicability_returns_agent_result():
     assert isinstance(result, AgentResult)
     assert result.agent_name == "clinical_applicability"
     assert result.score == 7
+    assert result.confidence == 0.75
+    assert len(result.findings) == 2
+    mock_llm.complete.assert_called_once()
+
+
+def test_clinical_applicability_handles_invalid_json():
+    from src.agents.clinical_applicability import ClinicalApplicabilityAgent
+
+    mock_llm = MagicMock()
+    mock_llm.complete.return_value = "This is not JSON at all"
+
+    agent = ClinicalApplicabilityAgent(llm=mock_llm)
+    result = agent.run("cancer treatment", _mock_results())
+
+    assert isinstance(result, AgentResult)
+    assert "failed" in result.summary.lower()
+    assert result.score is None
 
 
 def test_clinical_applicability_handles_failure():
@@ -254,6 +273,7 @@ def test_clinical_applicability_handles_failure():
 
     assert isinstance(result, AgentResult)
     assert "failed" in result.summary.lower()
+    assert result.score is None
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -337,12 +357,12 @@ class ClinicalApplicabilityAgent:
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_clinical.py -v`
-Expected: ALL 2 PASS
+Expected: ALL 3 PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/src/agents/clinical_applicability.py backend/tests/unit/test_agent_clinical.py
+cd capstone && git add backend/src/agents/clinical_applicability.py backend/tests/unit/test_agent_clinical.py
 git commit -m "feat(agents): implement ClinicalApplicabilityAgent"
 ```
 
@@ -401,7 +421,23 @@ def test_summarization_returns_agent_result():
     assert isinstance(result, AgentResult)
     assert result.agent_name == "summarization"
     assert result.score is None  # Summarization does not score
+    assert result.confidence == 0.85
     assert len(result.findings) == 2
+    mock_llm.complete.assert_called_once()
+
+
+def test_summarization_handles_invalid_json():
+    from src.agents.summarization import SummarizationAgent
+
+    mock_llm = MagicMock()
+    mock_llm.complete.return_value = "This is not JSON at all"
+
+    agent = SummarizationAgent(llm=mock_llm)
+    result = agent.run("cancer treatment", _mock_results())
+
+    assert isinstance(result, AgentResult)
+    assert "failed" in result.summary.lower()
+    assert result.score is None
 
 
 def test_summarization_handles_failure():
@@ -449,7 +485,7 @@ Your synthesis should:
 
 Return your analysis as a JSON object with these exact fields:
 {
-  "summary": "2-3 sentence synthesis of key insights",
+  "summary": "1-2 sentence synthesis of key insights",
   "findings": [
     {"label": "short label", "detail": "explanation", "severity": "info|warning|critical"}
   ],
@@ -498,11 +534,11 @@ class SummarizationAgent:
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_summarization.py -v`
-Expected: ALL 2 PASS
+Expected: ALL 3 PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/src/agents/summarization.py backend/tests/unit/test_agent_summarization.py
+cd capstone && git add backend/src/agents/summarization.py backend/tests/unit/test_agent_summarization.py
 git commit -m "feat(agents): implement SummarizationAgent"
 ```

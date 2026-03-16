@@ -20,7 +20,7 @@ Plan INT: Integration (API endpoint + DeepEval + build verify) ─── Sequent
 |------|-------|---------------------|------|
 | S | Models, BaseAgent, Registry | Run first | [2026-03-16-multi-agent-s-shared.md](./2026-03-16-multi-agent-s-shared.md) |
 | A | MethodologyCritic, ClinicalApplicability, Summarization | Parallel with B, C | [2026-03-16-multi-agent-a-agents-must.md](./2026-03-16-multi-agent-a-agents-must.md) |
-| B | Retrieval, StatisticalReviewer, Registry tests | Parallel with A, C (skippable) | [2026-03-16-multi-agent-b-agents-nice.md](./2026-03-16-multi-agent-b-agents-nice.md) |
+| B | Retrieval, StatisticalReviewer, Registry tests | Parallel with A, C | [2026-03-16-multi-agent-b-agents-nice.md](./2026-03-16-multi-agent-b-agents-nice.md) |
 | C | Frontend types, API client, AgentResultsPanel, App.tsx | Parallel with A, B | [2026-03-16-multi-agent-c-frontend.md](./2026-03-16-multi-agent-c-frontend.md) |
 | INT | POST /analyze endpoint, DeepEval metrics, build verify | After A, B, C | [2026-03-16-multi-agent-int.md](./2026-03-16-multi-agent-int.md) |
 
@@ -28,8 +28,8 @@ Plan INT: Integration (API endpoint + DeepEval + build verify) ─── Sequent
 
 - **Plan S** has no dependencies (standalone)
 - **Plan A, B, C** each depend on Plan S (models + base + registry must exist)
-- **Plan INT** depends on Plan A (must-have agents) + Plan C (frontend). Plan B is optional.
-- If time is tight, **skip Plan B** entirely — minimum viable is S → A + C → INT
+- **Plan INT** depends on Plan A + Plan B + Plan C (all agents must exist for DeepEval metrics)
+- Plan B is required for full build — the `StatisticalValidityMetric` imports `StatisticalReviewerAgent`
 
 ## Integration Strategy
 

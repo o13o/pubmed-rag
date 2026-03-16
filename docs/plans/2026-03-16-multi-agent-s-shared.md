@@ -22,11 +22,13 @@
 
 - [ ] **Step 1: Write the failing test**
 
-Append to `backend/tests/unit/test_models.py`:
+Append to `backend/tests/unit/test_models.py`. Add `AgentResult, Finding` to the existing import block (lines 3-6), then append the test functions at the end of the file:
 
 ```python
-from src.shared.models import AgentResult, Finding
-
+# Add to the existing import block at the top:
+# from src.shared.models import (
+#     ..., AgentResult, Finding,
+# )
 
 def test_finding_model():
     f = Finding(label="Weak sample", detail="n=12 is underpowered", severity="warning")
@@ -67,7 +69,7 @@ Expected: FAIL — `ImportError: cannot import name 'AgentResult'`
 
 Edit `backend/src/shared/models.py`:
 
-The existing file has a docstring on lines 1-5, then `from pydantic import BaseModel, Field` on line 7. Add `from typing import Any` as a new line before the pydantic import (line 7), preserving the docstring:
+Add `from typing import Any` immediately before the existing `from pydantic import BaseModel, Field` line, preserving the docstring:
 
 ```python
 from typing import Any
@@ -101,9 +103,11 @@ Expected: ALL PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/src/shared/models.py backend/tests/unit/test_models.py
+cd capstone && git add backend/src/shared/models.py backend/tests/unit/test_models.py
 git commit -m "feat(agents): add Finding and AgentResult models"
 ```
+
+> **Note:** `AnalyzeRequest` and `AnalyzeResponse` Pydantic models are deferred to Plan INT (the `/analyze` endpoint plan), as they are route-specific rather than shared models.
 
 ---
 
@@ -114,7 +118,9 @@ git commit -m "feat(agents): add Finding and AgentResult models"
 - Create: `backend/src/agents/base.py`
 - Create: `backend/src/agents/registry.py`
 
-No tests in this task — registry tests are deferred to Plan B (after all agents exist) because the registry imports all agent modules.
+No tests in this task — registry tests are deferred to Plan B Task 3 (after all agents exist) because the registry imports all agent modules. The `BaseAgent` protocol and `__init__.py` are pure declarations with no runtime behavior, so testing is deferred to integration tests.
+
+> **Spec deviation (intentional):** The spec's `get_agents(names)` signature has no `llm` parameter, but agents require an `LLMClient` instance. The registry adds `llm: LLMClient` as a required first parameter for dependency injection. This is a deliberate improvement over the spec.
 
 - [ ] **Step 1: Create package init**
 
@@ -171,7 +177,7 @@ def get_agents(llm: LLMClient, names: list[str] | None = None) -> list[BaseAgent
     from src.agents.statistical_reviewer import StatisticalReviewerAgent
     from src.agents.summarization import SummarizationAgent
 
-    registry: dict[str, type] = {
+    registry: dict[str, type[BaseAgent]] = {
         "retrieval": RetrievalAgent,
         "methodology_critic": MethodologyCriticAgent,
         "statistical_reviewer": StatisticalReviewerAgent,
@@ -187,6 +193,6 @@ def get_agents(llm: LLMClient, names: list[str] | None = None) -> list[BaseAgent
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/src/agents/
+cd capstone && git add backend/src/agents/
 git commit -m "feat(agents): add BaseAgent protocol and registry scaffold"
 ```

@@ -10,7 +10,7 @@
 
 **Spec:** [../specs/2026-03-16-multi-agent-design.md](../specs/2026-03-16-multi-agent-design.md)
 
-**Prerequisites:** Plan S, Plan A completed. Plan B optional. Plan C completed.
+**Prerequisites:** Plan S, Plan A, Plan B, Plan C completed. (Plan B is required because Task 2 imports `StatisticalReviewerAgent` for the `StatisticalValidityMetric`.)
 
 ---
 
@@ -110,8 +110,7 @@ def test_analyze_all_agents_when_none_specified(mock_get_agents, client):
     })
 
     assert response.status_code == 200
-    call_kwargs = mock_get_agents.call_args
-    assert call_kwargs.kwargs.get("names") is None or call_kwargs[1].get("names") is None
+    assert mock_get_agents.call_args.kwargs["names"] is None
 
 
 def test_analyze_requires_query(client):
@@ -190,7 +189,7 @@ Expected: ALL 4 PASS
 - [ ] **Step 6: Commit**
 
 ```bash
-git add backend/src/api/routes/analyze.py backend/src/api/main.py backend/tests/unit/test_api_analyze.py
+cd capstone && git add backend/src/api/routes/analyze.py backend/src/api/main.py backend/tests/unit/test_api_analyze.py
 git commit -m "feat(api): add POST /analyze multi-agent analysis endpoint"
 ```
 
@@ -406,7 +405,7 @@ Expected: ALL 3 PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/tests/eval/metrics/custom.py backend/tests/unit/test_eval_metrics.py
+cd capstone && git add backend/tests/eval/metrics/custom.py backend/tests/unit/test_eval_metrics.py
 git commit -m "feat(eval): add agent-based DeepEval metrics with tests"
 ```
 
@@ -429,6 +428,6 @@ Expected: `dist/` directory created, no errors
 If there are uncommitted fixes from the verification steps:
 
 ```bash
-git add -A
+cd capstone && git add -A
 git commit -m "chore: verify full build for multi-agent feature"
 ```

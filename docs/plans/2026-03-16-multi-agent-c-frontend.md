@@ -54,7 +54,7 @@ export interface AnalyzeResponse {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add frontend/src/types/index.ts
+cd capstone && git add frontend/src/types/index.ts
 git commit -m "feat(frontend): add agent analysis TypeScript types"
 ```
 
@@ -111,7 +111,7 @@ In `frontend/vite.config.ts`, add to the `server.proxy` object:
 - [ ] **Step 3: Commit**
 
 ```bash
-git add frontend/src/lib/api.ts frontend/vite.config.ts
+cd capstone && git add frontend/src/lib/api.ts frontend/vite.config.ts
 git commit -m "feat(frontend): add analyzeQuery API function and proxy"
 ```
 
@@ -227,7 +227,7 @@ export function AgentResultsPanel({ agentResults, loading }: Props) {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add frontend/src/components/AgentResultsPanel.tsx
+cd capstone && git add frontend/src/components/AgentResultsPanel.tsx
 git commit -m "feat(frontend): add AgentResultsPanel component"
 ```
 
@@ -240,7 +240,7 @@ git commit -m "feat(frontend): add AgentResultsPanel component"
 
 - [ ] **Step 1: Update imports**
 
-In `frontend/src/App.tsx`, update the imports:
+In `frontend/src/App.tsx`, replace the existing import block (lines 1-13) with:
 
 ```typescript
 import { useState, useRef } from "react";
@@ -269,7 +269,11 @@ const [agentResults, setAgentResults] = useState<AgentResult[]>([]);
 const [analyzing, setAnalyzing] = useState(false);
 ```
 
-- [ ] **Step 3: Add handleAnalyze function**
+- [ ] **Step 3: Clear agent results on new query**
+
+In the `handleSend` function, add `setAgentResults([])` at the beginning (near the existing `setLoading(true)` line) so that stale agent analysis results are cleared when the user performs a new search or ask query.
+
+- [ ] **Step 4: Add handleAnalyze function**
 
 After `handleSend`, add:
 
@@ -312,7 +316,7 @@ const handleAnalyze = async () => {
 };
 ```
 
-- [ ] **Step 4: Add Analyze button and AgentResultsPanel to the aside**
+- [ ] **Step 5: Add Analyze button and AgentResultsPanel to the aside**
 
 In the `<aside>` section, between `<FilterPanel ... />` and `<ResultsPanel ... />`, add:
 
@@ -329,14 +333,14 @@ In the `<aside>` section, between `<FilterPanel ... />` and `<ResultsPanel ... /
 <AgentResultsPanel agentResults={agentResults} loading={analyzing} />
 ```
 
-- [ ] **Step 5: Verify TypeScript compiles**
+- [ ] **Step 6: Verify TypeScript compiles**
 
 Run: `cd capstone/frontend && npx --package=typescript tsc --noEmit`
 Expected: No errors
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add frontend/src/App.tsx
+cd capstone && git add frontend/src/App.tsx
 git commit -m "feat(frontend): wire up Analyze button and AgentResultsPanel"
 ```
