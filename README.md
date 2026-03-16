@@ -84,7 +84,7 @@ uv run python scripts/build_mesh_db.py --input data/desc2025.xml --output data/m
 
 ```bash
 uv run python scripts/ingest_bulk.py \
-    ../playground/pubmed_pipeline/data/processed/sampled.jsonl
+    ../data_pipeline/data/processed/sampled.jsonl
 ```
 
 Features:
@@ -401,8 +401,8 @@ capstone/
 │       │   └── MessageBubble.tsx   # Chat message rendering (markdown-ready)
 │       ├── lib/api.ts              # API client (REST + SSE streaming)
 │       └── types/index.ts          # TypeScript type definitions
-└── playground/
-    └── pubmed_pipeline/            # Data download & sampling scripts
+├── data_pipeline/                  # PubMed data download & sampling scripts
+└── loadtest/                       # Locust load testing (planned)
 ```
 
 ## Dataset

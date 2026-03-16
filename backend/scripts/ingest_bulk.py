@@ -2,7 +2,7 @@
 
 Usage:
     cd capstone/backend
-    uv run python scripts/ingest_bulk.py ../../playground/pubmed_pipeline/data/processed/sampled.jsonl
+    uv run python scripts/ingest_bulk.py ../../data_pipeline/data/processed/sampled.jsonl
 
 Features:
     - Streams JSONL in batches (no full-file memory load)

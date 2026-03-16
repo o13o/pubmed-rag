@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger(__name__)
 
 # --- Step 0: Paths ---
-SAMPLED_JSONL = Path(__file__).resolve().parent.parent.parent / "playground/pubmed_pipeline/data/processed/sampled.jsonl"
+SAMPLED_JSONL = Path(__file__).resolve().parent.parent.parent / "data_pipeline/data/processed/sampled.jsonl"
 N = 100
 
 # --- Step 1: Create temp file with first N lines ---
