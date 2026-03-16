@@ -9,8 +9,11 @@ An AI-powered multimodal medical research retrieval and analysis system that all
 **Data flow:**
 
 ```
-User Query (text, voice, or image)
-  → [if audio/image] Transcription (Whisper / GPT-4o-mini vision)
+Multimodal Input (text / voice / image)
+  → [voice/image] POST /transcribe → text (Whisper / GPT-4o-mini vision)
+  → User reviews transcribed text
+
+Text Query (typed or transcribed)
   → Input Guardrails (medical term validation)
   → Query Expansion (MeSH term enrichment via DuckDB)
   → Hybrid Retrieval (Dense + BM25 via RRF fusion in Milvus)
@@ -389,7 +392,7 @@ To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LAN
 
 ```
 capstone/
-├── docker-compose.yml              # Milvus + etcd + MinIO + Backend
+├── docker-compose.yml              # Milvus + etcd + MinIO + Backend + Frontend
 ├── .env.example                    # Environment variable template
 ├── docs/
 │   ├── architecture.mmd            # Architecture diagram (Mermaid source)
