@@ -42,6 +42,7 @@ def _run_rag_query(query: str) -> tuple[str, list[str]]:
     """
     from pymilvus import Collection, connections
     from src.rag.chain import ask
+    from src.retrieval.client import LocalSearchClient
     from src.retrieval.reranker import get_reranker
     from src.shared.config import get_settings
     from src.shared.llm import LLMClient
@@ -58,10 +59,11 @@ def _run_rag_query(query: str) -> tuple[str, list[str]]:
         model_name=settings.reranker_model,
         llm=llm if settings.reranker_type == "llm" else None,
     )
+    search_client = LocalSearchClient(collection)
 
     response = ask(
         query=query,
-        collection=collection,
+        search_client=search_client,
         llm=llm,
         mesh_db=mesh_db,
         reranker=reranker,
