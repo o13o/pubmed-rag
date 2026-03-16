@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pymilvus import Collection, connections
 
-from src.api.routes import analyze, ask, health, search
+from src.api.routes import analyze, ask, health, search, transcribe
 from src.retrieval.client import LocalSearchClient, RemoteSearchClient
 from src.retrieval.reranker import get_reranker
 from src.shared.config import get_settings
@@ -75,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(ask.router)
     app.include_router(search.router)
     app.include_router(analyze.router)
+    app.include_router(transcribe.router)
 
     return app
 

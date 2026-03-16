@@ -6,6 +6,7 @@ import type {
   SearchRequest,
   SearchResponse,
   SSEDoneEvent,
+  TranscribeResponse,
 } from "../types";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
@@ -119,6 +120,22 @@ export async function analyzeQuery(
   });
   if (!res.ok) {
     throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export async function transcribeFile(
+  file: File
+): Promise<TranscribeResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${API_BASE}/transcribe`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Transcription failed: ${res.status} ${detail}`);
   }
   return res.json();
 }

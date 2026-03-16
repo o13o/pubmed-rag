@@ -112,3 +112,8 @@ export interface AnalyzeResponse {
   query: string;
   agent_results: AgentResult[];
 }
+
+export interface TranscribeResponse {
+  text: string;
+  media_type: "audio" | "image";
+}
