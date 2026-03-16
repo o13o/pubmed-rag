@@ -17,6 +17,9 @@ const AGENT_LABELS: Record<string, string> = {
   statistical_reviewer: "Statistical Reviewer",
   clinical_applicability: "Clinical Applicability",
   summarization: "Summarization",
+  conflicting_findings: "Conflicting Findings",
+  trend_analysis: "Trend Analysis",
+  knowledge_graph: "Knowledge Graph",
 };
 
 function ScoreBadge({ score }: { score: number }) {

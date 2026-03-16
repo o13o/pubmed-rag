@@ -8,11 +8,12 @@ from src.agents.registry import get_agents
 def test_get_agents_returns_all():
     llm = MagicMock()
     agents = get_agents(llm=llm)
-    assert len(agents) == 5
+    assert len(agents) == 8
     names = {a.name for a in agents}
     assert names == {
         "retrieval", "methodology_critic", "statistical_reviewer",
         "clinical_applicability", "summarization",
+        "conflicting_findings", "trend_analysis", "knowledge_graph",
     }
 
 

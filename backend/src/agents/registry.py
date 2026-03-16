@@ -11,10 +11,13 @@ from src.shared.llm import LLMClient
 def get_agents(llm: LLMClient, names: list[str] | None = None) -> list[BaseAgent]:
     """Return agent instances. If names is None, return all."""
     from src.agents.clinical_applicability import ClinicalApplicabilityAgent
+    from src.agents.conflicting_findings import ConflictingFindingsAgent
+    from src.agents.knowledge_graph import KnowledgeGraphAgent
     from src.agents.methodology_critic import MethodologyCriticAgent
     from src.agents.retrieval import RetrievalAgent
     from src.agents.statistical_reviewer import StatisticalReviewerAgent
     from src.agents.summarization import SummarizationAgent
+    from src.agents.trend_analysis import TrendAnalysisAgent
 
     registry: dict[str, type[BaseAgent]] = {
         "retrieval": RetrievalAgent,
@@ -22,6 +25,9 @@ def get_agents(llm: LLMClient, names: list[str] | None = None) -> list[BaseAgent
         "statistical_reviewer": StatisticalReviewerAgent,
         "clinical_applicability": ClinicalApplicabilityAgent,
         "summarization": SummarizationAgent,
+        "conflicting_findings": ConflictingFindingsAgent,
+        "trend_analysis": TrendAnalysisAgent,
+        "knowledge_graph": KnowledgeGraphAgent,
     }
 
     if names is not None:
