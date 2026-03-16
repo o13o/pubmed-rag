@@ -247,7 +247,10 @@ function App() {
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-100">
       <header className="border-b border-gray-800 px-6 py-2 flex-shrink-0">
-        <h1 className="text-lg font-bold tracking-tight">
+        <h1
+          onClick={handleClear}
+          className="text-lg font-bold tracking-tight cursor-pointer"
+        >
           <span className="text-blue-400">PubMed</span> RAG
         </h1>
       </header>
