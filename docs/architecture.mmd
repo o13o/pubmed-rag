@@ -17,8 +17,17 @@ flowchart TD
 
     EMBEDDER --> MILVUS
 
+    %% ── Multimodal Input ──
+    USER["User Query\n(text)"]
+    AUDIO["Voice Input\n(audio)"]
+    IMAGE["Image Input\n(research figure)"]
+    TRANSCRIBE["POST /transcribe\nWhisper · GPT-4o-mini vision"]
+
+    AUDIO --> TRANSCRIBE
+    IMAGE --> TRANSCRIBE
+    TRANSCRIBE -->|transcribed text| USER
+
     %% ── Query & Retrieval ──
-    USER["User Query"]
     MESHDB["MeSH DB (DuckDB)\n30k descriptors\n200k synonyms"]
     QE["Query Expander\nLLM keywords + MeSH lookup"]
 
@@ -61,6 +70,7 @@ flowchart TD
         API_ASK["POST /ask\nRAG pipeline"]
         API_SEARCH["POST /search\nvector search"]
         API_ANALYZE["POST /analyze\nmulti-agent"]
+        API_TRANSCRIBE["POST /transcribe\naudio · image → text"]
         API_HEALTH["GET /health"]
     end
 
@@ -79,13 +89,16 @@ flowchart TD
     API <-->|REST| FRONTEND
 
     %% ── Multi-Agent Analysis ──
-    subgraph AGENTS["Multi-Agent Analysis Layer"]
+    subgraph AGENTS["Multi-Agent Analysis Layer (8 agents)"]
         direction LR
-        A1["Retrieval\nAgent"]
+        A1["Retrieval"]
         A2["Methodology\nCritic"]
         A3["Statistical\nReviewer"]
         A4["Clinical\nApplicability"]
-        A5["Summarization\nAgent"]
+        A5["Summarization"]
+        A6["Conflicting\nFindings"]
+        A7["Trend\nAnalysis"]
+        A8["Knowledge\nGraph"]
     end
 
     RERANK --> AGENTS
@@ -124,11 +137,12 @@ flowchart TD
     class JSONL,LOADER,CHUNKER,EMBEDDER data
     class MILVUS,DENSE,BM25,SCALAR store
     class USER,QE,RERANK,SEARCH,S_DENSE,S_BM25 query
+    class AUDIO,IMAGE,TRANSCRIBE query
     class PROMPT,LLM rag
     class GUARD,G1,G2,G3,G4 guard
-    class API,API_ASK,API_SEARCH,API_HEALTH api
+    class API,API_ASK,API_SEARCH,API_HEALTH,API_TRANSCRIBE api
     class FRONTEND,CHAT,RESULTS,FILTERS ui
-    class AGENTS,A1,A2,A3,A4,A5 agents
+    class AGENTS,A1,A2,A3,A4,A5,A6,A7,A8 agents
     class EVAL,E1,E2,E3,E5,E6,E7 eval
     class API_ANALYZE api
     class AGENT_PANEL ui
