@@ -24,16 +24,20 @@ event: done   (includes citations, warnings, disclaimer)
 **New SSE event sequence:**
 ```
 [silence during search + rerank only]
-event: citations  <- NEW: {citations: [...]}
+event: citations  <- NEW: {citations: [...], search_results: [...]}
 event: token      (repeated, starts immediately after)
-event: done       (warnings, disclaimer, is_grounded — citations removed from here)
+event: done       (citations, warnings, disclaimer, is_grounded)
 ```
 
-The `citations` event payload matches the existing `Citation` model:
+The `citations` event payload includes both `Citation` models and full `SearchResult` models (with `abstract_text`). The `search_results` field enables downstream agent analysis in ask mode without a separate search call.
+
 ```json
 {
   "citations": [
     {"pmid": "...", "title": "...", "journal": "...", "year": 2024, "relevance_score": 0.89}
+  ],
+  "search_results": [
+    {"pmid": "...", "title": "...", "abstract_text": "...", "score": 0.89, "year": 2024, "journal": "...", "mesh_terms": [...]}
   ]
 }
 ```
@@ -46,7 +50,7 @@ The `citations` event payload matches the existing `Citation` model:
 
 ### Backward compatibility
 
-- The `done` event **keeps** the `citations` field as well for non-streaming callers and robustness. The frontend just uses whichever arrives first.
+- The `done` event **keeps** the `citations` field for robustness. The frontend uses the early `citations` event for immediate display; `done` serves as a fallback.
 - The non-streaming `/ask` endpoint is unchanged.
 
 ## Scope
