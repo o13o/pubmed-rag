@@ -1,0 +1,42 @@
+[
+  {
+    "query": "What are the latest treatments for early-stage pancreatic cancer?",
+    "notes": "Covers neoadjuvant chemotherapy, immunotherapy, SBRT"
+  },
+  {
+    "query": "Non-invasive therapies for knee osteoarthritis in elderly patients",
+    "notes": "Physical therapy, PRP injection, hyaluronic acid"
+  },
+  {
+    "query": "mRNA vaccine efficacy and safety studies published after 2022",
+    "notes": "COVID-19 mRNA vaccines, booster doses, long-term safety"
+  },
+  {
+    "query": "CRISPR gene therapy for sickle cell disease",
+    "notes": "Gene editing, hemoglobin F induction, clinical trials"
+  },
+  {
+    "query": "Effects of gut microbiome on immune checkpoint inhibitor response in cancer",
+    "notes": "Immunotherapy, microbiota diversity, fecal transplant"
+  },
+  {
+    "query": "What is the role of GLP-1 receptor agonists in type 2 diabetes management?",
+    "notes": "Semaglutide, liraglutide, cardiovascular outcomes"
+  },
+  {
+    "query": "Machine learning approaches for early detection of Alzheimer's disease",
+    "notes": "Neuroimaging biomarkers, deep learning, MRI/PET"
+  },
+  {
+    "query": "Comparison of robotic surgery versus laparoscopic surgery for colorectal cancer",
+    "notes": "Minimally invasive, outcomes, recovery time"
+  },
+  {
+    "query": "Current evidence on long COVID cardiovascular complications",
+    "notes": "Myocarditis, thrombosis, post-acute sequelae"
+  },
+  {
+    "query": "CAR-T cell therapy outcomes in relapsed diffuse large B-cell lymphoma",
+    "notes": "Axicabtagene ciloleucel, tisagenlecleucel, response rates"
+  }
+]

@@ -3,6 +3,7 @@
 from fastapi import Request
 from pymilvus import Collection
 
+from src.retrieval.client import SearchClient
 from src.retrieval.reranker import BaseReranker
 from src.shared.config import Settings
 from src.shared.llm import LLMClient
@@ -27,3 +28,7 @@ def get_reranker_dep(request: Request) -> BaseReranker:
 
 def get_app_settings(request: Request) -> Settings:
     return request.app.state.settings
+
+
+def get_search_client(request: Request) -> SearchClient:
+    return request.app.state.search_client

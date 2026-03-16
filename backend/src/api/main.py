@@ -7,7 +7,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pymilvus import Collection, connections
 
-from src.api.routes import ask, health, search
+from src.api.routes import analyze, ask, health, search
+from src.retrieval.client import LocalSearchClient, RemoteSearchClient
 from src.retrieval.reranker import get_reranker
 from src.shared.config import get_settings
 from src.shared.llm import LLMClient
@@ -22,10 +23,6 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
 
     # Startup
-    connections.connect("default", host=settings.milvus_host, port=str(settings.milvus_port))
-    collection = Collection(settings.milvus_collection)
-    collection.load()
-
     llm = LLMClient(model=settings.llm_model, timeout=settings.llm_timeout)
     mesh_db = MeSHDatabase(settings.mesh_db_path)
     reranker = get_reranker(
@@ -34,10 +31,20 @@ async def lifespan(app: FastAPI):
         llm=llm if settings.reranker_type == "llm" else None,
     )
 
+    if settings.deploy_mode == "microservice":
+        search_client = RemoteSearchClient(settings.search_service_url)
+        collection = None
+    else:
+        connections.connect("default", host=settings.milvus_host, port=str(settings.milvus_port))
+        collection = Collection(settings.milvus_collection)
+        collection.load()
+        search_client = LocalSearchClient(collection)
+
     app.state.collection = collection
     app.state.llm = llm
     app.state.mesh_db = mesh_db
     app.state.reranker = reranker
+    app.state.search_client = search_client
     app.state.settings = settings
 
     logger.info("API started: collection=%s", settings.milvus_collection)
@@ -45,7 +52,8 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     mesh_db.close()
-    connections.disconnect("default")
+    if settings.deploy_mode != "microservice":
+        connections.disconnect("default")
     logger.info("API shutdown complete")
 
 
@@ -66,6 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(ask.router)
     app.include_router(search.router)
+    app.include_router(analyze.router)
 
     return app
 

@@ -2,8 +2,10 @@ import { useState, useRef } from "react";
 import { ChatPanel } from "./components/ChatPanel";
 import { FilterPanel } from "./components/FilterPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
-import { askQueryStream, searchQuery } from "./lib/api";
+import { AgentResultsPanel } from "./components/AgentResultsPanel";
+import { analyzeQuery, askQueryStream, searchQuery } from "./lib/api";
 import type {
+  AgentResult,
   Citation,
   Filters,
   Message,
@@ -22,6 +24,8 @@ function App() {
   const [citations, setCitations] = useState<Citation[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [agentResults, setAgentResults] = useState<AgentResult[]>([]);
+  const [analyzing, setAnalyzing] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const handleSend = async (query: string) => {
@@ -32,6 +36,7 @@ function App() {
     };
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
+    setAgentResults([]);
 
     try {
       if (mode === "ask") {
@@ -124,6 +129,43 @@ function App() {
     }
   };
 
+  const handleAnalyze = async () => {
+    if (searchResults.length === 0 && citations.length === 0) return;
+    setAnalyzing(true);
+    setAgentResults([]);
+    try {
+      // In search mode, use searchResults directly.
+      // In ask mode, searchResults may be empty — use citations as a fallback.
+      // Note: citations lack abstract_text, so agent analysis will be limited
+      // to title/metadata. For full analysis, use search mode first.
+      const results: SearchResult[] =
+        searchResults.length > 0
+          ? searchResults
+          : citations.map((c) => ({
+              pmid: c.pmid,
+              title: c.title,
+              abstract_text: "",
+              score: c.relevance_score,
+              year: c.year,
+              journal: c.journal,
+              mesh_terms: [],
+            }));
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+      const query = lastUserMsg?.content ?? "";
+      const res = await analyzeQuery({ query, results });
+      setAgentResults(res.agent_results);
+    } catch (err) {
+      const errorMsg: Message = {
+        id: crypto.randomUUID(),
+        role: "error",
+        content: err instanceof Error ? err.message : "Analysis failed",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-100">
       <header className="border-b border-gray-800 px-6 py-3 flex items-center justify-between">
@@ -150,6 +192,16 @@ function App() {
             onModeChange={setMode}
             onFiltersChange={setFilters}
           />
+          {(searchResults.length > 0 || citations.length > 0) && (
+            <button
+              onClick={handleAnalyze}
+              disabled={analyzing}
+              className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              {analyzing ? "Analyzing..." : "Analyze with Agents"}
+            </button>
+          )}
+          <AgentResultsPanel agentResults={agentResults} loading={analyzing} />
           <ResultsPanel
             citations={citations}
             searchResults={searchResults}

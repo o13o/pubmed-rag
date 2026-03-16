@@ -1,4 +1,6 @@
 import type {
+  AnalyzeRequest,
+  AnalyzeResponse,
   AskRequest,
   AskResponse,
   SearchRequest,
@@ -105,4 +107,18 @@ export async function askQueryStream(
     if (err instanceof DOMException && err.name === "AbortError") return;
     onError(err instanceof Error ? err : new Error(String(err)));
   }
+}
+
+export async function analyzeQuery(
+  req: AnalyzeRequest
+): Promise<AnalyzeResponse> {
+  const res = await fetch(`${API_BASE}/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json();
 }

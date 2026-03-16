@@ -1,31 +1,55 @@
 # PubMed RAG — AI-Powered Medical Research Abstract Finder
 
-Semantic search and RAG system for medical research abstracts powered by PubMed data, hybrid retrieval (dense + BM25), cross-encoder reranking, and LLM-based answer generation with output guardrails.
+An AI-powered multimodal medical research retrieval and analysis system that allows clinicians and researchers to explore PubMed publications using natural language queries. The system retrieves relevant medical research abstracts based on semantic similarity, provides structured insights through a multi-agent analysis layer, and includes output guardrails for medical accuracy.
 
 ## Architecture
 
 ![Architecture Diagram](docs/architecture.png)
 
-**Key components:**
+**Data flow:**
 
-- **Data Ingestion** — PubMed JSONL → parse → chunk (title + abstract + MeSH) → embed (text-embedding-3-small) → Milvus
-- **Hybrid Search** — Dense cosine similarity + BM25 keyword matching with RRF fusion
-- **Cross-Encoder Reranker** — ms-marco-MiniLM-L-6-v2 for improved relevance ranking
-- **RAG Chain** — Query expansion (MeSH terms) → retrieval → prompt building → LLM (GPT-4o-mini)
-- **Output Guardrails** — Citation grounding, hallucination detection, MeSH term validation, medical disclaimer
-- **API** — FastAPI with `/ask` (RAG pipeline) and `/search` (vector search) endpoints
-- **Frontend** — React + TypeScript + Tailwind CSS
+```
+User Query
+  → Input Guardrails (medical term validation)
+  → Query Expansion (MeSH term enrichment via DuckDB)
+  → Hybrid Retrieval (Dense + BM25 via RRF fusion in Milvus)
+  → Cross-Encoder Reranking
+  → LLM Answer Generation (GPT-4o-mini via LiteLLM)
+  → Output Guardrails (grounding check, hallucination detection, disclaimer)
+  → Response with Citations
+
+User can also trigger:
+  → Multi-Agent Analysis (8 specialized agents evaluate retrieved results)
+```
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Language | Python 3.11+ |
+| Package Manager | [uv](https://docs.astral.sh/uv/) |
+| Vector Database | Milvus 2.5 (Docker) |
+| Embeddings | OpenAI `text-embedding-3-small` (1536-dim) |
+| LLM | GPT-4o-mini via LiteLLM |
+| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| MeSH Lookup | DuckDB |
+| API Framework | FastAPI + Uvicorn |
+| Frontend | React 19 + Tailwind CSS 4 + Vite |
+| Evaluation | DeepEval |
+| Observability | LangFuse (token usage tracking, latency, cost) |
+| Containerization | Docker Compose |
 
 ## Prerequisites
 
 - Python 3.11+
 - Node.js 20+
 - Docker & Docker Compose
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
 - OpenAI API key
 
-## Quick Start
+## Setup
 
-### 1. Start infrastructure (Milvus + Backend)
+### 1. Start Infrastructure (Milvus)
 
 ```bash
 cd capstone
@@ -33,29 +57,66 @@ cd capstone
 # Set your OpenAI API key
 export OPENAI_API_KEY="sk-..."
 
-# Start all services
-docker compose up -d
+# Start Milvus and its dependencies
+docker compose up -d etcd minio milvus
+
+# Wait for Milvus to be healthy (~90s on first start)
+docker compose ps
 ```
 
-This starts:
-- **Milvus** (vector DB) on port 19530
-- **etcd** + **MinIO** (Milvus dependencies)
-- **Backend API** on port 8000
-
-### 2. Local development (without Docker)
+### 2. Install Backend Dependencies
 
 ```bash
-# Backend
 cd capstone/backend
-cp .env.example .env  # Edit with your OPENAI_API_KEY
+cp ../.env.example .env   # Edit and set OPENAI_API_KEY
 uv sync
-uv run uvicorn src.api.main:app --reload --port 8000
+```
 
-# Frontend (separate terminal)
+### 3. Build MeSH Database
+
+Download the MeSH descriptor XML (`desc2025.xml`) from [NLM MeSH Downloads](https://nlm.nih.gov/databases/download/mesh.html), then:
+
+```bash
+uv run python scripts/build_mesh_db.py --input data/desc2025.xml --output data/mesh.duckdb
+```
+
+### 4. Ingest PubMed Data
+
+```bash
+uv run python scripts/ingest_bulk.py \
+    ../data_pipeline/data/processed/sampled.jsonl
+```
+
+Features:
+- Streams JSONL in batches of 100 records
+- Progress bar with ETA
+- Checkpoint file for resumption on failure
+- Automatically creates Milvus collection with dense + BM25 schema
+
+### 5. Start the Backend
+
+```bash
+uv run uvicorn src.api.main:app --reload --port 8000
+```
+
+Or via Docker:
+
+```bash
+cd capstone
+docker compose up -d backend
+```
+
+API available at `http://localhost:8000`. Health check: `GET /health`.
+
+### 6. Start the Frontend
+
+```bash
 cd capstone/frontend
 npm install
-npm run dev
+VITE_API_BASE=http://localhost:8000 npm run dev
 ```
+
+UI available at `http://localhost:5173`.
 
 ### Environment Variables
 
@@ -69,35 +130,100 @@ npm run dev
 | `SEARCH_MODE` | `dense` | Search mode: `dense` or `hybrid` |
 | `RERANKER_TYPE` | `cross_encoder` | Reranker: `none`, `cross_encoder`, or `llm` |
 | `MESH_DB_PATH` | `data/mesh.duckdb` | Path to MeSH DuckDB database |
+| `LANGFUSE_PUBLIC_KEY` | (optional) | LangFuse public key for observability |
+| `LANGFUSE_SECRET_KEY` | (optional) | LangFuse secret key |
+| `LANGFUSE_HOST` | `https://cloud.langfuse.com` | LangFuse server URL |
 
-## Data Ingestion
+## API Endpoints
 
-### Download PubMed data
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/ask` | Full RAG pipeline (supports SSE streaming via `stream: true`) |
+| `POST` | `/search` | Semantic/hybrid search with metadata filtering |
+| `POST` | `/analyze` | Multi-agent research analysis |
+
+### Example: Ask (RAG Pipeline)
 
 ```bash
-cd capstone/playground/pubmed_pipeline
-uv sync
-uv run python download_hf.py    # Download from HuggingFace
-uv run python sample.py          # Sample 100k records
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What are the latest treatments for early-stage pancreatic cancer?",
+    "top_k": 10,
+    "search_mode": "hybrid",
+    "guardrails_enabled": true
+  }'
 ```
 
-### Ingest into Milvus
+Response:
+
+```json
+{
+  "answer": "Based on the retrieved research abstracts, several treatment approaches...",
+  "citations": [
+    {
+      "pmid": "38123456",
+      "title": "Neoadjuvant FOLFIRINOX in Resectable Pancreatic Cancer...",
+      "journal": "Journal of Clinical Oncology",
+      "year": 2024,
+      "relevance_score": 0.892
+    }
+  ],
+  "query": "What are the latest treatments for early-stage pancreatic cancer?",
+  "warnings": [],
+  "disclaimer": "Disclaimer: This information is generated from research abstracts...",
+  "is_grounded": true
+}
+```
+
+### Example: Search
 
 ```bash
-cd capstone/backend
-uv run python scripts/ingest_bulk.py \
-    ../playground/pubmed_pipeline/data/processed/sampled.jsonl
+curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mRNA vaccine efficacy",
+    "top_k": 5,
+    "year_min": 2022,
+    "search_mode": "hybrid"
+  }'
 ```
 
-Features:
-- Streams JSONL in batches (100 records per batch)
-- Progress bar with ETA
-- Checkpoint file for resumption on failure
-- Automatically creates the Milvus collection with BM25 schema
+### Example: Multi-Agent Analysis
 
-## Usage
+```bash
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mRNA vaccine efficacy",
+    "results": [ ... SearchResult objects from /search ... ],
+    "agents": ["methodology_critic", "clinical_applicability", "summarization"]
+  }'
+```
 
-### CLI
+Response:
+
+```json
+{
+  "query": "mRNA vaccine efficacy",
+  "agent_results": [
+    {
+      "agent_name": "methodology_critic",
+      "summary": "3 of 5 studies use randomized controlled trial design...",
+      "findings": [
+        {"label": "Strong RCT presence", "detail": "3/5 studies are RCTs", "severity": "info"},
+        {"label": "Selection bias risk", "detail": "2 observational studies lack matching", "severity": "warning"}
+      ],
+      "confidence": 0.85,
+      "score": 7,
+      "details": null
+    }
+  ]
+}
+```
+
+### CLI Usage
 
 ```bash
 cd capstone/backend
@@ -115,28 +241,7 @@ uv run python -m src.cli "mRNA vaccine efficacy" --search-mode hybrid --reranker
 uv run python -m src.cli "pancreatic cancer therapy" --json
 ```
 
-### API
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Ask (RAG pipeline)
-curl -X POST http://localhost:8000/ask \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What are the latest treatments for breast cancer?", "top_k": 5}'
-
-# Search (vector search only)
-curl -X POST http://localhost:8000/search \
-  -H "Content-Type: application/json" \
-  -d '{"query": "CRISPR gene therapy", "year_min": 2020, "search_mode": "hybrid"}'
-```
-
-### Frontend
-
-Open http://localhost:5173 (dev) or http://localhost:8000 (production, served by FastAPI).
-
-## Example Output
+## Example CLI Output
 
 **Query:** "What are the latest treatments for early-stage pancreatic cancer?"
 
@@ -166,73 +271,148 @@ Citations (5):
        Ann Surg Oncol (2023) | Score: 0.856
   ...
 
-[warning] citation_grounding: Claim about "improved resectability" is
-          partially supported — source mentions "increased R0 rates"
-
-DISCLAIMER: This information is for research purposes only and should not
-be used as medical advice. Always consult qualified healthcare professionals.
+Disclaimer: This information is generated from research abstracts and is
+intended for educational purposes only. It does not constitute medical
+advice. Always consult a qualified healthcare professional for medical
+decisions.
 ```
 
-## Testing
+## Multi-Agent Analysis
+
+The system includes 8 specialized agents that evaluate retrieved research from different expert perspectives:
+
+| Agent | Responsibility | Returns Score |
+|-------|---------------|---------------|
+| **Retrieval** | Evaluate relevance, coverage, and gaps in search results | No |
+| **Methodology Critic** | Evaluate study design, bias risk, methodological rigor | Yes (1-10) |
+| **Statistical Reviewer** | Analyze statistical methods, significance, sample sizes | Yes (1-10) |
+| **Clinical Applicability** | Assess real-world clinical relevance and applicability | Yes (1-10) |
+| **Summarization** | Synthesize insights across all retrieved studies | No |
+| **Conflicting Findings** | Identify contradictory results across studies | No |
+| **Trend Analysis** | Detect emerging treatments and research trends | No |
+| **Knowledge Graph** | Map connections between diseases, treatments, and outcomes | No |
+
+Each agent uses a specialized system prompt + LLM call that returns structured JSON conforming to a common `AgentResult` schema. Agents operate independently (no inter-agent dependencies) and can be selectively invoked via the `agents` parameter in the `/analyze` endpoint.
+
+The agent logic is also reused as custom DeepEval metrics for evaluating RAG quality (MethodologyQuality, StatisticalValidity, ClinicalRelevance).
+
+## Evaluation
+
+The project uses [DeepEval](https://docs.confident-ai.com/) for RAG quality evaluation with both standard and custom metrics:
+
+```bash
+cd capstone/backend
+uv pip install -e ".[eval]"
+uv run pytest tests/eval/test_rag_evaluation.py -v
+```
+
+**Standard Metrics:**
+- **Faithfulness** — Is the answer grounded in retrieved context?
+- **Answer Relevancy** — Does the answer address the query?
+
+**Custom Metrics:**
+- **Citation Presence** — Are PMID citations included in the response?
+- **Medical Disclaimer** — Is a medical disclaimer appended?
+- **Methodology Quality** — Study design and methodological rigor (via MethodologyCriticAgent)
+- **Statistical Validity** — Statistical methods and significance (via StatisticalReviewerAgent)
+- **Clinical Relevance** — Real-world clinical applicability (via ClinicalApplicabilityAgent)
+
+## Running Tests
 
 ```bash
 cd capstone/backend
 
-# Unit tests
+# Unit tests (all modules + all agents)
 uv run pytest tests/unit/ -v
 
 # Integration tests (requires running Milvus)
 uv run pytest tests/integration/ -v
 
-# Evaluation suite (requires running system + DeepEval)
-uv pip install -e ".[eval]"
+# Evaluation suite (requires running Milvus + ingested data + DeepEval)
 uv run pytest tests/eval/ -v
 ```
+
+## Token Usage Tracking
+
+All LLM calls (query expansion, answer generation, guardrail validation, agent analysis) are automatically traced via LiteLLM's LangFuse integration. When configured, every call logs:
+
+- **Token usage** — prompt tokens, completion tokens, total tokens
+- **Latency** — per-call and end-to-end
+- **Cost** — estimated cost per model
+- **Trace view** — full RAG pipeline trace with parent/child spans
+
+To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LANGFUSE_HOST` in `.env`.
+
+## Design Decisions
+
+| Decision | Choice | Trade-off |
+|----------|--------|-----------|
+| Vector Database | Milvus 2.5 | Native BM25 + dense hybrid search in a single engine; heavier infra vs. simpler alternatives like ChromaDB |
+| Chunking Strategy | One chunk per abstract (title + abstract + MeSH) | Simpler than multi-chunk; sufficient for abstract-length documents (~300 words) |
+| Retrieval | Hybrid search (Dense + BM25 via RRF) | Better recall than dense-only; slight latency increase |
+| Reranker | Cross-encoder (`ms-marco-MiniLM-L-6-v2`) | Improved precision; adds ~200ms per query |
+| LLM Abstraction | LiteLLM | Swap between GPT-4o, Claude, etc. without code changes |
+| MeSH Lookup | DuckDB (local) | Fast lookups for 30k+ descriptors; no external service dependency |
+| Agent Design | Independent agents, no inter-agent communication | Simple, testable, parallelizable; orchestration can be added later |
+| Guardrails | LLM-based grounding check + MeSH term validation | Catches hallucinations and unverified medical terms; adds one extra LLM call |
+| Streaming | Server-Sent Events (SSE) | Progressive token delivery to frontend; simpler than WebSockets for unidirectional flow |
 
 ## Project Structure
 
 ```
 capstone/
-├── docker-compose.yml          # Milvus + Backend orchestration
+├── docker-compose.yml              # Milvus + etcd + MinIO + Backend
+├── .env.example                    # Environment variable template
 ├── docs/
-│   ├── architecture.mmd        # Architecture diagram (Mermaid source)
-│   ├── architecture.png        # Architecture diagram (rendered)
-│   ├── architecture.pdf        # Architecture diagram (PDF)
-│   ├── adr/                    # Architecture Decision Records
-│   ├── specs/                  # Design specifications
-│   └── plans/                  # Implementation plans
+│   ├── architecture.mmd            # Architecture diagram (Mermaid source)
+│   ├── architecture.png            # Architecture diagram (rendered)
+│   ├── adr/                        # Architecture Decision Records
+│   ├── specs/                      # Design specifications
+│   └── plans/                      # Implementation plans
 ├── backend/
 │   ├── Dockerfile
 │   ├── pyproject.toml
 │   ├── src/
-│   │   ├── api/                # FastAPI routes (/ask, /search, /health)
-│   │   ├── ingestion/          # Data loading, chunking, embedding, Milvus setup
-│   │   ├── retrieval/          # Hybrid search, reranker
-│   │   ├── rag/                # RAG chain, prompt templates
-│   │   ├── guardrails/         # Input/output validation
-│   │   ├── shared/             # Config, models, LLM client, MeSH DB
-│   │   └── cli.py              # CLI entry point
+│   │   ├── agents/                 # 8 specialized analysis agents + registry
+│   │   ├── api/                    # FastAPI routes (/ask, /search, /analyze, /health)
+│   │   ├── guardrails/             # Input validation & output grounding checks
+│   │   ├── ingestion/              # Data loading, chunking, embedding, Milvus setup
+│   │   ├── retrieval/              # Hybrid search, query expansion, reranking
+│   │   ├── rag/                    # RAG chain orchestration & prompt templates
+│   │   ├── shared/                 # Config, models, LLM client, MeSH DB
+│   │   └── cli.py                  # CLI entry point
 │   ├── scripts/
-│   │   └── ingest_bulk.py      # Bulk ingestion script
-│   ├── data/                   # MeSH DuckDB, runtime data
+│   │   ├── ingest_bulk.py          # Bulk ingestion (100k records, checkpointed)
+│   │   ├── build_mesh_db.py        # MeSH XML → DuckDB builder
+│   │   └── smoke_test.py           # Quick API smoke test
 │   └── tests/
-│       ├── unit/               # Unit tests
-│       ├── integration/        # Integration tests
-│       └── eval/               # DeepEval evaluation suite
+│       ├── unit/                   # Unit tests for all modules + agents
+│       ├── integration/            # Milvus connection tests
+│       └── eval/                   # DeepEval evaluation suite
 ├── frontend/
 │   ├── package.json
 │   └── src/
-│       ├── App.tsx
-│       ├── components/         # ChatPanel, FilterPanel, ResultsPanel
-│       ├── lib/api.ts          # API client
-│       └── types/              # TypeScript types
-└── playground/
-    └── pubmed_pipeline/        # Data download & sampling scripts
+│       ├── App.tsx                 # Main app with Ask/Search/Analyze modes
+│       ├── components/
+│       │   ├── ChatPanel.tsx       # Chat interface with SSE streaming
+│       │   ├── FilterPanel.tsx     # Search mode, year, top_k filters
+│       │   ├── ResultsPanel.tsx    # Citations & search results display
+│       │   ├── AgentResultsPanel.tsx # Agent analysis cards with score badges
+│       │   └── MessageBubble.tsx   # Chat message rendering (markdown-ready)
+│       ├── lib/api.ts              # API client (REST + SSE streaming)
+│       └── types/index.ts          # TypeScript type definitions
+├── data_pipeline/                  # PubMed data download & sampling scripts
+└── loadtest/                       # Locust load testing
 ```
 
-## TODO
+## Dataset
 
-- [ ] Multi-Agent analysis layer (Retrieval, Methodology Critic, Statistical Reviewer, Clinical Applicability, Summarization agents)
-- [ ] Update architecture diagram after multi-agent implementation (change dashed lines to solid in `docs/architecture.mmd`)
-- [ ] Streaming responses (SSE) for `/ask` endpoint
-- [ ] Token usage tracking
+**PubMed / MEDLINE Research Abstracts** — 100k sampled records from the full PubMed corpus.
+
+- Source: [HuggingFace ncbi/pubmed](https://huggingface.co/datasets/ncbi/pubmed)
+- Key fields: PMID, title, abstract, authors, publication_date, MeSH_terms, keywords, journal
+- Format: JSONL (pre-processed from XML)
+
+## License
+
+This project was developed as a capstone project for the FDE Training Program.

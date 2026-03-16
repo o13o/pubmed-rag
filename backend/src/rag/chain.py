@@ -1,18 +1,18 @@
 """RAG chain: retrieve → expand → rerank → prompt → LLM → guardrails → response.
 
 Orchestrates the full retrieval-augmented generation pipeline.
+Uses SearchClient and GuardrailClient protocols so the same code works
+in both monolith (direct calls) and microservice (HTTP calls) deployments.
 """
 
 import logging
 from collections.abc import Generator
 
-from pymilvus import Collection
-
-from src.guardrails.output import GuardrailValidator
+from src.guardrails.client import GuardrailClient, LocalGuardrailClient
 from src.rag.prompts import build_system_prompt, build_user_prompt
+from src.retrieval.client import SearchClient
 from src.retrieval.query_expander import QueryExpander
 from src.retrieval.reranker import BaseReranker, NoOpReranker
-from src.retrieval.search import search
 from src.shared.llm import LLMClient
 from src.shared.mesh_db import MeSHDatabase
 from src.shared.models import (
@@ -24,21 +24,22 @@ logger = logging.getLogger(__name__)
 
 def ask(
     query: str,
-    collection: Collection,
+    search_client: SearchClient,
     llm: LLMClient,
     mesh_db: MeSHDatabase,
     filters: SearchFilters | None = None,
     reranker: BaseReranker | None = None,
     guardrails_enabled: bool = True,
+    guardrail_client: GuardrailClient | None = None,
 ) -> RAGResponse | ValidatedResponse:
     """Execute the full RAG pipeline.
 
     1. Expand query with MeSH terms
-    2. Search Milvus for relevant abstracts
+    2. Search for relevant abstracts (via SearchClient)
     3. Rerank results (if reranker provided)
     4. Build prompt with query + retrieved abstracts
     5. Call LLM for answer generation
-    6. Run guardrails (if enabled)
+    6. Run guardrails (via GuardrailClient, if enabled)
     7. Package response with citations
     """
     if filters is None:
@@ -52,7 +53,7 @@ def ask(
     logger.info("Expanded query: '%s' → '%s'", query, expanded.expanded_query)
 
     # 2. Search
-    results = search(expanded.expanded_query, collection, filters)
+    results = search_client.search(expanded.expanded_query, filters)
     logger.info("Retrieved %d results", len(results))
 
     # 3. Rerank
@@ -86,20 +87,22 @@ def ask(
 
     # 7. Guardrails
     if guardrails_enabled:
-        validator = GuardrailValidator(llm=llm, mesh_db=mesh_db)
-        return validator.validate(rag_response, results)
+        if guardrail_client is None:
+            guardrail_client = LocalGuardrailClient(llm=llm, mesh_db=mesh_db)
+        return guardrail_client.validate(rag_response, results)
 
     return rag_response
 
 
 def ask_stream(
     query: str,
-    collection: Collection,
+    search_client: SearchClient,
     llm: LLMClient,
     mesh_db: MeSHDatabase,
     filters: SearchFilters | None = None,
     reranker: BaseReranker | None = None,
     guardrails_enabled: bool = True,
+    guardrail_client: GuardrailClient | None = None,
 ) -> Generator[dict, None, None]:
     """Execute the RAG pipeline with streaming LLM output.
 
@@ -120,7 +123,7 @@ def ask_stream(
         logger.info("Expanded query: '%s' → '%s'", query, expanded.expanded_query)
 
         # 2. Search
-        results = search(expanded.expanded_query, collection, filters)
+        results = search_client.search(expanded.expanded_query, filters)
         logger.info("Retrieved %d results", len(results))
 
         # 3. Rerank
@@ -155,9 +158,10 @@ def ask_stream(
         is_grounded = True
 
         if guardrails_enabled:
+            if guardrail_client is None:
+                guardrail_client = LocalGuardrailClient(llm=llm, mesh_db=mesh_db)
             rag_response = RAGResponse(answer=full_answer, citations=citations, query=query)
-            validator = GuardrailValidator(llm=llm, mesh_db=mesh_db)
-            validated = validator.validate(rag_response, results)
+            validated = guardrail_client.validate(rag_response, results)
             warnings = [w.model_dump() for w in validated.warnings]
             disclaimer = validated.disclaimer
             is_grounded = validated.is_grounded

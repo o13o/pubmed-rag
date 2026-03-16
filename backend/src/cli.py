@@ -14,6 +14,7 @@ import sys
 from pymilvus import Collection, connections
 
 from src.rag.chain import ask
+from src.retrieval.client import LocalSearchClient
 from src.retrieval.reranker import get_reranker
 from src.shared.config import get_settings
 from src.shared.llm import LLMClient
@@ -71,10 +72,12 @@ def main():
         search_mode=args.search_mode,
     )
 
+    search_client = LocalSearchClient(collection)
+
     # Execute RAG
     response = ask(
         query=args.query,
-        collection=collection,
+        search_client=search_client,
         llm=llm,
         mesh_db=mesh_db,
         filters=filters,

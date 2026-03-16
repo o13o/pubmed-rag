@@ -1,7 +1,7 @@
 """Tests for shared Pydantic models."""
 
 from src.shared.models import (
-    Article, Chunk, Citation, GuardrailWarning, IngestReport,
+    AgentResult, Article, Chunk, Citation, Finding, GuardrailWarning, IngestReport,
     RAGResponse, SearchFilters, SearchResult, ValidatedResponse,
 )
 
@@ -111,3 +111,33 @@ def test_search_filters_search_mode_default():
 def test_ingest_report():
     r = IngestReport(total_articles=100, total_chunks=100, upserted=100, source_path="/tmp/test.jsonl")
     assert r.total_articles == 100
+
+
+def test_finding_model():
+    f = Finding(label="Weak sample", detail="n=12 is underpowered", severity="warning")
+    assert f.label == "Weak sample"
+    assert f.severity == "warning"
+
+
+def test_agent_result_model():
+    result = AgentResult(
+        agent_name="methodology_critic",
+        summary="Study design is adequate.",
+        findings=[Finding(label="RCT", detail="3/5 are RCTs", severity="info")],
+        confidence=0.85,
+        score=7,
+    )
+    assert result.agent_name == "methodology_critic"
+    assert result.score == 7
+    assert result.details is None
+    assert len(result.findings) == 1
+
+
+def test_agent_result_without_score():
+    result = AgentResult(
+        agent_name="summarization",
+        summary="Overall consensus.",
+        findings=[],
+        confidence=0.9,
+    )
+    assert result.score is None

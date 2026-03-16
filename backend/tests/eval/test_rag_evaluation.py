@@ -11,13 +11,16 @@ import pytest
 
 from deepeval import assert_test
 from deepeval.metrics import (
-    FaithfulnessMetric,
     AnswerRelevancyMetric,
     ContextualPrecisionMetric,
+    FaithfulnessMetric,
 )
 from deepeval.test_case import LLMTestCase
 
-from tests.eval.metrics.custom import CitationPresenceMetric, MedicalDisclaimerMetric
+from tests.eval.metrics.custom import (
+    CitationPresenceMetric,
+    MedicalDisclaimerMetric,
+)
 
 
 DATASET_PATH = Path(__file__).parent / "dataset.json"
@@ -26,7 +29,9 @@ DATASET_PATH = Path(__file__).parent / "dataset.json"
 METRICS = [
     FaithfulnessMetric(threshold=0.7, model="gpt-4o-mini"),
     AnswerRelevancyMetric(threshold=0.7, model="gpt-4o-mini"),
+    ContextualPrecisionMetric(threshold=0.7, model="gpt-4o-mini"),
     CitationPresenceMetric(threshold=0.5),
+    MedicalDisclaimerMetric(threshold=1.0),
 ]
 
 
@@ -42,6 +47,7 @@ def _run_rag_query(query: str) -> tuple[str, list[str]]:
     """
     from pymilvus import Collection, connections
     from src.rag.chain import ask
+    from src.retrieval.client import LocalSearchClient
     from src.retrieval.reranker import get_reranker
     from src.shared.config import get_settings
     from src.shared.llm import LLMClient
@@ -58,10 +64,11 @@ def _run_rag_query(query: str) -> tuple[str, list[str]]:
         model_name=settings.reranker_model,
         llm=llm if settings.reranker_type == "llm" else None,
     )
+    search_client = LocalSearchClient(collection)
 
     response = ask(
         query=query,
-        collection=collection,
+        search_client=search_client,
         llm=llm,
         mesh_db=mesh_db,
         reranker=reranker,
@@ -74,8 +81,7 @@ def _run_rag_query(query: str) -> tuple[str, list[str]]:
         answer = f"{response.answer}\n\n{response.disclaimer}"
 
     # Re-fetch abstracts for context
-    from src.retrieval.search import search
-    results = search(query, collection, SearchFilters(top_k=settings.top_k))
+    results = search_client.search(query, SearchFilters(top_k=settings.top_k))
     context = [f"PMID: {r.pmid}\n{r.title}\n{r.abstract_text}" for r in results]
 
     mesh_db.close()

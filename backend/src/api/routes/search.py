@@ -2,10 +2,9 @@
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
-from pymilvus import Collection
 
-from src.api.dependencies import get_collection
-from src.retrieval.search import search as search_milvus
+from src.api.dependencies import get_search_client
+from src.retrieval.client import SearchClient
 from src.shared.models import SearchFilters, SearchResult
 
 router = APIRouter()
@@ -28,7 +27,7 @@ class SearchResponse(BaseModel):
 @router.post("/search", response_model=SearchResponse)
 def search_endpoint(
     req: SearchRequest,
-    collection: Collection = Depends(get_collection),
+    search_client: SearchClient = Depends(get_search_client),
 ):
     filters = SearchFilters(
         year_min=req.year_min,
@@ -37,5 +36,5 @@ def search_endpoint(
         top_k=req.top_k,
         search_mode=req.search_mode,
     )
-    results = search_milvus(req.query, collection, filters)
+    results = search_client.search(req.query, filters)
     return SearchResponse(results=results, total=len(results))

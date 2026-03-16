@@ -86,3 +86,29 @@ export interface Message {
   warnings?: Warning[];
   disclaimer?: string;
 }
+
+export interface Finding {
+  label: string;
+  detail: string;
+  severity: "info" | "warning" | "critical";
+}
+
+export interface AgentResult {
+  agent_name: string;
+  summary: string;
+  findings: Finding[];
+  confidence: number;
+  score: number | null;
+  details: Record<string, unknown> | null;
+}
+
+export interface AnalyzeRequest {
+  query: string;
+  results: SearchResult[];
+  agents?: string[];
+}
+
+export interface AnalyzeResponse {
+  query: string;
+  agent_results: AgentResult[];
+}

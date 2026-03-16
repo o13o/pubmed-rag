@@ -5,10 +5,10 @@ import json
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from pymilvus import Collection
 
-from src.api.dependencies import get_collection, get_llm, get_mesh_db, get_reranker_dep
+from src.api.dependencies import get_llm, get_mesh_db, get_reranker_dep, get_search_client
 from src.rag.chain import ask as rag_ask, ask_stream
+from src.retrieval.client import SearchClient
 from src.retrieval.reranker import BaseReranker
 from src.shared.llm import LLMClient
 from src.shared.mesh_db import MeSHDatabase
@@ -37,7 +37,7 @@ class AskResponse(BaseModel):
     is_grounded: bool = True
 
 
-def _sse_generator(req, collection, llm, mesh_db, reranker):
+def _sse_generator(req, search_client, llm, mesh_db, reranker):
     """Format ask_stream() events as SSE wire format."""
     filters = SearchFilters(
         year_min=req.year_min,
@@ -48,7 +48,7 @@ def _sse_generator(req, collection, llm, mesh_db, reranker):
     )
     for event in ask_stream(
         query=req.query,
-        collection=collection,
+        search_client=search_client,
         llm=llm,
         mesh_db=mesh_db,
         filters=filters,
@@ -61,14 +61,14 @@ def _sse_generator(req, collection, llm, mesh_db, reranker):
 @router.post("/ask")
 def ask_endpoint(
     req: AskRequest,
-    collection: Collection = Depends(get_collection),
+    search_client: SearchClient = Depends(get_search_client),
     llm: LLMClient = Depends(get_llm),
     mesh_db: MeSHDatabase = Depends(get_mesh_db),
     reranker: BaseReranker = Depends(get_reranker_dep),
 ):
     if req.stream:
         return StreamingResponse(
-            _sse_generator(req, collection, llm, mesh_db, reranker),
+            _sse_generator(req, search_client, llm, mesh_db, reranker),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
@@ -86,7 +86,7 @@ def ask_endpoint(
     )
     response = rag_ask(
         query=req.query,
-        collection=collection,
+        search_client=search_client,
         llm=llm,
         mesh_db=mesh_db,
         filters=filters,

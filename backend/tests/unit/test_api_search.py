@@ -24,7 +24,7 @@ def client():
             yield c
 
 
-@patch("src.api.routes.search.search_milvus")
+@patch("src.retrieval.client.LocalSearchClient.search")
 def test_search_returns_results(mock_search, client):
     mock_search.return_value = [
         SearchResult(

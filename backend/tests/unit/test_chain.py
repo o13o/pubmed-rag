@@ -19,11 +19,15 @@ def _mock_search_results():
     ]
 
 
-@patch("src.rag.chain.search")
+def _mock_search_client(results=None):
+    client = MagicMock()
+    client.search.return_value = results if results is not None else _mock_search_results()
+    return client
+
+
 @patch("src.rag.chain.QueryExpander")
-def test_ask_returns_validated_response(mock_expander_cls, mock_search):
+def test_ask_returns_validated_response(mock_expander_cls):
     """With guardrails enabled, ask() should return ValidatedResponse."""
-    mock_search.return_value = _mock_search_results()
     mock_expander = MagicMock()
     mock_expander.expand.return_value = MagicMock(expanded_query="cancer treatment")
     mock_expander_cls.return_value = mock_expander
@@ -39,7 +43,7 @@ def test_ask_returns_validated_response(mock_expander_cls, mock_search):
 
     response = ask(
         query="cancer treatment",
-        collection=MagicMock(),
+        search_client=_mock_search_client(),
         llm=mock_llm,
         mesh_db=MagicMock(),
         reranker=mock_reranker,
@@ -54,11 +58,9 @@ def test_ask_returns_validated_response(mock_expander_cls, mock_search):
     mock_reranker.rerank.assert_called_once()
 
 
-@patch("src.rag.chain.search")
 @patch("src.rag.chain.QueryExpander")
-def test_ask_without_guardrails(mock_expander_cls, mock_search):
+def test_ask_without_guardrails(mock_expander_cls):
     """With guardrails disabled, ask() should return RAGResponse."""
-    mock_search.return_value = _mock_search_results()
     mock_expander = MagicMock()
     mock_expander.expand.return_value = MagicMock(expanded_query="cancer treatment")
     mock_expander_cls.return_value = mock_expander
@@ -68,7 +70,7 @@ def test_ask_without_guardrails(mock_expander_cls, mock_search):
 
     response = ask(
         query="cancer treatment",
-        collection=MagicMock(),
+        search_client=_mock_search_client(),
         llm=mock_llm,
         mesh_db=MagicMock(),
         guardrails_enabled=False,
@@ -78,11 +80,9 @@ def test_ask_without_guardrails(mock_expander_cls, mock_search):
     assert not isinstance(response, ValidatedResponse)
 
 
-@patch("src.rag.chain.search")
 @patch("src.rag.chain.QueryExpander")
-def test_ask_with_no_results(mock_expander_cls, mock_search):
+def test_ask_with_no_results(mock_expander_cls):
     """Empty search results should still produce a response."""
-    mock_search.return_value = []
     mock_expander = MagicMock()
     mock_expander.expand.return_value = MagicMock(expanded_query="unknown query")
     mock_expander_cls.return_value = mock_expander
@@ -95,7 +95,7 @@ def test_ask_with_no_results(mock_expander_cls, mock_search):
 
     response = ask(
         query="unknown query",
-        collection=MagicMock(),
+        search_client=_mock_search_client(results=[]),
         llm=mock_llm,
         mesh_db=MagicMock(),
         guardrails_enabled=True,
@@ -105,11 +105,9 @@ def test_ask_with_no_results(mock_expander_cls, mock_search):
     assert response.citations == []
 
 
-@patch("src.rag.chain.search")
 @patch("src.rag.chain.QueryExpander")
-def test_ask_stream_yields_token_and_done_events(mock_expander_cls, mock_search):
+def test_ask_stream_yields_token_and_done_events(mock_expander_cls):
     """ask_stream() should yield token events then a done event."""
-    mock_search.return_value = _mock_search_results()
     mock_expander = MagicMock()
     mock_expander.expand.return_value = MagicMock(expanded_query="cancer treatment")
     mock_expander_cls.return_value = mock_expander
@@ -124,7 +122,7 @@ def test_ask_stream_yields_token_and_done_events(mock_expander_cls, mock_search)
 
     events = list(ask_stream(
         query="cancer treatment",
-        collection=MagicMock(),
+        search_client=_mock_search_client(),
         llm=mock_llm,
         mesh_db=MagicMock(),
         reranker=mock_reranker,
@@ -148,11 +146,9 @@ def test_ask_stream_yields_token_and_done_events(mock_expander_cls, mock_search)
     assert len(done_data["citations"]) == 1
 
 
-@patch("src.rag.chain.search")
 @patch("src.rag.chain.QueryExpander")
-def test_ask_stream_without_guardrails(mock_expander_cls, mock_search):
+def test_ask_stream_without_guardrails(mock_expander_cls):
     """ask_stream() without guardrails should still yield done with empty warnings."""
-    mock_search.return_value = _mock_search_results()
     mock_expander = MagicMock()
     mock_expander.expand.return_value = MagicMock(expanded_query="cancer treatment")
     mock_expander_cls.return_value = mock_expander
@@ -165,7 +161,7 @@ def test_ask_stream_without_guardrails(mock_expander_cls, mock_search):
 
     events = list(ask_stream(
         query="cancer treatment",
-        collection=MagicMock(),
+        search_client=_mock_search_client(),
         llm=mock_llm,
         mesh_db=MagicMock(),
         reranker=mock_reranker,
@@ -178,18 +174,19 @@ def test_ask_stream_without_guardrails(mock_expander_cls, mock_search):
     assert done_events[0]["data"]["disclaimer"] == ""
 
 
-@patch("src.rag.chain.search")
 @patch("src.rag.chain.QueryExpander")
-def test_ask_stream_yields_error_on_exception(mock_expander_cls, mock_search):
+def test_ask_stream_yields_error_on_exception(mock_expander_cls):
     """ask_stream() should yield an error event if an exception occurs."""
-    mock_search.side_effect = RuntimeError("Milvus connection lost")
     mock_expander = MagicMock()
     mock_expander.expand.return_value = MagicMock(expanded_query="test")
     mock_expander_cls.return_value = mock_expander
 
+    mock_search_client = MagicMock()
+    mock_search_client.search.side_effect = RuntimeError("Milvus connection lost")
+
     events = list(ask_stream(
         query="test",
-        collection=MagicMock(),
+        search_client=mock_search_client,
         llm=MagicMock(),
         mesh_db=MagicMock(),
     ))

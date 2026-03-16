@@ -87,6 +87,17 @@ services:
       retries: 3
       start_period: 30s
 
+  frontend:
+    container_name: pubmed-rag-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
 volumes:
   etcd_data:
   minio_data:

@@ -4,6 +4,8 @@ These models serve as the inter-module communication contracts.
 When splitting into microservices, these become API schemas.
 """
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -87,3 +89,18 @@ class IngestReport(BaseModel):
     total_chunks: int
     upserted: int
     source_path: str
+
+
+class Finding(BaseModel):
+    label: str
+    detail: str
+    severity: str  # "info" | "warning" | "critical"
+
+
+class AgentResult(BaseModel):
+    agent_name: str
+    summary: str
+    findings: list[Finding]
+    confidence: float
+    score: int | None = None
+    details: dict[str, Any] | None = None
