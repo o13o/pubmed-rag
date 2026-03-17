@@ -104,3 +104,16 @@ class AgentResult(BaseModel):
     confidence: float
     score: int | None = None
     details: dict[str, Any] | None = None
+
+
+class LiteratureReview(BaseModel):
+    query: str
+    overview: str
+    main_findings: str
+    gaps_and_conflicts: str
+    recommendations: str
+    citations: list[Citation]
+    search_results: list[SearchResult]
+    agent_results: list[AgentResult]
+    agents_succeeded: int
+    agents_failed: int
