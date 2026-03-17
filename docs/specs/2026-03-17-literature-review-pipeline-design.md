@@ -2,7 +2,7 @@
 
 ## Overview
 
-Add a `/review` endpoint that orchestrates a 3-stage agent pipeline to generate a structured literature review. This implements Agent-to-Agent (A2A) handoff within the process — each stage's output feeds directly into the next stage as input.
+Add a `POST /review` endpoint that orchestrates a 3-stage agent pipeline to generate a structured literature review. This implements Agent-to-Agent (A2A) handoff within the process — each stage's output feeds directly into the next stage as input.
 
 ## Motivation
 
@@ -11,7 +11,7 @@ The existing `/analyze` endpoint runs agents independently with no inter-agent c
 - Handoff to full-text retrieval and meta-analysis agents
 - Automated literature review generation for complex medical queries
 
-This feature addresses all three by introducing a pipeline where agents build on each other's output.
+This feature addresses all three by introducing a pipeline where agents build on each other's output. In-process handoff was chosen over HTTP-based or message-queue A2A because all agents run in the same process and share the same LLM client — external communication adds latency and complexity with no benefit for this use case.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ POST /review { query, filters }
   Stage 1: Search (via SearchClient)
   |         query + filters -> list[SearchResult]
   |
-  Stage 2: Parallel analysis (6 agents, ThreadPoolExecutor)
+  Stage 2: Parallel analysis (6 agents, ThreadPoolExecutor, max_workers=6)
   |         query + SearchResult[] -> AgentResult[] (6 results)
   |         - MethodologyCriticAgent
   |         - StatisticalReviewerAgent
@@ -34,6 +34,12 @@ POST /review { query, filters }
             query + SearchResult[] + AgentResult[] -> LiteratureReview
 ```
 
+### Agent Selection Rationale
+
+Stage 2 uses 6 of the 8 registered agents. The two excluded agents are:
+- **RetrievalAgent**: Redundant — Stage 1 already performs retrieval via SearchClient.
+- **SummarizationAgent**: Replaced — Stage 3 (ReviewSynthesizer) handles synthesis with richer input (agent analyses + search results).
+
 ### Handoff Model
 
 Each stage receives the accumulated context from prior stages. This is in-process function-call handoff — no HTTP or message queue needed. Data flows via Pydantic models:
@@ -44,7 +50,7 @@ Each stage receives the accumulated context from prior stages. This is in-proces
 
 ## New Components
 
-### 1. `src/shared/models.py` — LiteratureReview model
+### 1. `backend/src/shared/models.py` — LiteratureReview model
 
 ```python
 class LiteratureReview(BaseModel):
@@ -54,82 +60,116 @@ class LiteratureReview(BaseModel):
     gaps_and_conflicts: str
     recommendations: str
     citations: list[Citation]
+    search_results: list[SearchResult]
     agent_results: list[AgentResult]
+    agents_succeeded: int
+    agents_failed: int
 ```
 
-### 2. `src/agents/review_synthesizer.py` — ReviewSynthesizer
+### 2. `backend/src/agents/review_synthesizer.py` — ReviewSynthesizer
 
-- Takes query, search results, and all 6 AgentResults
-- Uses a dedicated system prompt to produce the 4-section review (overview, main_findings, gaps_and_conflicts, recommendations)
-- Returns `LiteratureReview`
-- Not registered in `agents/registry.py` (pipeline-only, not available via `/analyze`)
+Does NOT implement `BaseAgent` protocol (different signature — takes agent results as additional input).
 
-### 3. `src/agents/pipeline.py` — ReviewPipeline
+```python
+class ReviewSynthesizer:
+    def __init__(self, llm: LLMClient): ...
+
+    def run(
+        self,
+        query: str,
+        results: list[SearchResult],
+        agent_results: list[AgentResult],
+    ) -> LiteratureReview: ...
+```
+
+- Uses a dedicated system prompt to return JSON with 4 fields: `overview`, `main_findings`, `gaps_and_conflicts`, `recommendations`
+- Builds citations from search results
+- Not registered in `agents/registry.py` (pipeline-only)
+
+### 3. `backend/src/agents/pipeline.py` — ReviewPipeline
 
 Orchestrates the 3-stage pipeline:
 
 ```python
 class ReviewPipeline:
-    def __init__(self, search_client, llm, mesh_db, reranker):
-        ...
+    def __init__(self, search_client: SearchClient, llm: LLMClient):
+        self.search_client = search_client
+        self.llm = llm
 
     def run(self, query: str, filters: SearchFilters) -> LiteratureReview:
         # Stage 1: Search
-        results = self._search(query, filters)
+        results = self.search_client.search(query, filters)
 
         # Stage 2: Parallel agent analysis
-        agent_results = self._analyze(query, results)
+        agent_results = self._run_agents(query, results)
 
         # Stage 3: Synthesize review
-        return self._synthesize(query, results, agent_results)
+        return ReviewSynthesizer(self.llm).run(query, results, agent_results)
 ```
 
-- Stage 2 uses `concurrent.futures.ThreadPoolExecutor` for parallel agent execution (6 agents)
-- Each agent receives the same query + search results (same interface as `/analyze`)
+- Stage 2 uses `concurrent.futures.ThreadPoolExecutor(max_workers=6)`
+- Each agent has individual error handling: on failure, returns a degraded AgentResult (matching existing agent pattern) rather than aborting the pipeline
+- The pipeline continues to Stage 3 with partial results if some agents fail
 
-### 4. `src/api/routes/review.py` — POST /review
+### Error Handling
 
-Request:
-```json
-{
-  "query": "Latest treatments for early-stage pancreatic cancer",
-  "year_min": 2020,
-  "top_k": 10,
-  "search_mode": "hybrid"
-}
+| Stage | Failure | Behavior |
+|-------|---------|----------|
+| Stage 1: Search returns 0 results | HTTP 404 with message "No results found for query" |
+| Stage 2: Some agents fail | Pipeline continues; failed agents return degraded AgentResult with `confidence: 0.0` |
+| Stage 2: All agents fail | Pipeline continues to Stage 3; ReviewSynthesizer works with search results only |
+| Stage 3: ReviewSynthesizer fails | HTTP 502 with error message |
+
+### 4. `backend/src/api/routes/review.py` — POST /review
+
+```python
+class ReviewRequest(BaseModel):
+    query: str
+    year_min: int | None = None
+    year_max: int | None = None
+    journals: list[str] = Field(default_factory=list)
+    top_k: int = 10
+    search_mode: str | None = None
 ```
 
 Response: `LiteratureReview` JSON (synchronous).
 
-### 5. `prompts/agents/review_synthesizer.yaml` — Dedicated prompt
+### 5. `backend/prompts/agents/review_synthesizer.yaml` — Dedicated prompt
 
-System prompt instructs the LLM to synthesize agent analyses into a 4-section review:
-- **Overview**: Brief context and scope
-- **Main Findings**: Key results across studies
-- **Gaps & Conflicts**: Contradictions and evidence gaps
-- **Recommendations**: Research directions and clinical implications
+System prompt instructs the LLM to return JSON with these fields:
+- **overview**: Brief context and scope of the review
+- **main_findings**: Key results across studies
+- **gaps_and_conflicts**: Contradictions and evidence gaps identified
+- **recommendations**: Research directions and clinical implications
+
+The prompt includes the agent analysis summaries as structured input so the LLM can synthesize rather than re-analyze.
 
 ### 6. Frontend
 
-- "Generate Literature Review" button (appears when search results or citations exist)
-- Review display panel with the 4 sections rendered as markdown
-- Shows agent results in a collapsible section below the review
+- **Button**: "Generate Literature Review" in the sidebar, below "Analyze with Agents" button. Appears when search results or citations exist.
+- **State**: `reviewResult: LiteratureReview | null`, `reviewing: boolean` in App.tsx
+- **API function**: `reviewQuery(req: ReviewRequest): Promise<LiteratureReview>` in `lib/api.ts`
+- **Type**: `LiteratureReview` added to `types/index.ts`
+- **Display**: New `ReviewPanel.tsx` component renders the 4 sections as markdown. Agent results shown in a collapsible section below. Placed in sidebar above AgentResultsPanel.
+- **Mode**: No new mode needed. The button triggers a standalone API call, independent of ask/search mode.
 
 ## Existing Code Changes
 
-- `src/api/main.py`: Add `review` router
-- `src/api/dependencies.py`: No changes (reuses existing deps)
-- `src/agents/registry.py`: No changes (ReviewSynthesizer is pipeline-only)
-- `src/shared/models.py`: Add `LiteratureReview` model
+- `backend/src/api/main.py`: Add `review` router
+- `backend/src/api/dependencies.py`: No changes (reuses existing deps)
+- `backend/src/agents/registry.py`: No changes
+- `backend/src/shared/models.py`: Add `LiteratureReview` model
 
 ## Testing
 
-- Unit test for `ReviewSynthesizer` (mock LLM, verify output structure)
-- Unit test for `ReviewPipeline` (mock search client + agents, verify stage handoff)
-- Unit test for `/review` endpoint (mock pipeline, verify request/response)
+- Unit test for `ReviewSynthesizer` (mock LLM, verify JSON parsing and output structure)
+- Unit test for `ReviewPipeline` (mock SearchClient + mock agents, verify 3-stage handoff and partial failure handling)
+- Unit test for `/review` endpoint (mock pipeline via dependency override, verify request/response)
+- Integration test for full pipeline (mock LLM only, verify real agent orchestration)
 
 ## Non-Goals
 
 - SSE streaming for `/review` (synchronous is sufficient)
 - Modifying existing `/analyze` behavior
 - Inter-agent communication via external protocols (Google A2A protocol, etc.)
+- Guardrails on review output (can be added later; the component abstracts exist)
