@@ -1,5 +1,7 @@
 """Create the pubmed_abstracts collection in Milvus."""
 
+import logging
+
 from pymilvus import (
     Collection,
     CollectionSchema,
@@ -10,6 +12,8 @@ from pymilvus import (
     connections,
     utility,
 )
+
+logger = logging.getLogger(__name__)
 
 COLLECTION_NAME = "pubmed_abstracts"
 EMBEDDING_DIM = 1536
@@ -70,8 +74,7 @@ def create_collection(
             col = Collection(COLLECTION_NAME)
             field_names = [f.name for f in col.schema.fields]
             if "chunk_text_sparse" not in field_names:
-                import logging
-                logging.getLogger(__name__).warning(
+                logger.warning(
                     "Collection '%s' exists but lacks BM25 fields. "
                     "Run with recreate=True and re-ingest data for hybrid search.",
                     COLLECTION_NAME,
@@ -98,8 +101,12 @@ def create_collection(
 
 if __name__ == "__main__":
     import argparse
+
+    from src.shared.logging_config import setup_logging
+
+    setup_logging()
     parser = argparse.ArgumentParser()
     parser.add_argument("--recreate", action="store_true", help="Drop and recreate collection")
     args = parser.parse_args()
     col = create_collection(recreate=args.recreate)
-    print(f"Collection '{col.name}' ready. Fields: {[f.name for f in col.schema.fields]}")
+    logger.info("Collection '%s' ready. Fields: %s", col.name, [f.name for f in col.schema.fields])

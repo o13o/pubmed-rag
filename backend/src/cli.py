@@ -18,6 +18,7 @@ from src.retrieval.client import LocalSearchClient
 from src.retrieval.reranker import get_reranker
 from src.shared.config import get_settings
 from src.shared.llm import LLMClient
+from src.shared.logging_config import setup_logging
 from src.shared.mesh_db import MeSHDatabase
 from src.shared.models import SearchFilters, ValidatedResponse
 
@@ -39,10 +40,7 @@ def main():
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args()
 
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
+    setup_logging(level="DEBUG" if args.verbose else "INFO")
 
     settings = get_settings()
 
@@ -85,29 +83,30 @@ def main():
         guardrails_enabled=not args.no_guardrails,
     )
 
-    # Output
+    # Output (user-facing terminal output → stdout, not logging)
+    out = sys.stdout.write
     if args.json:
-        print(json.dumps(response.model_dump(), indent=2, ensure_ascii=False))
+        out(json.dumps(response.model_dump(), indent=2, ensure_ascii=False) + "\n")
     else:
-        print(f"\n{'='*60}")
-        print(f"Query: {response.query}")
-        print(f"{'='*60}\n")
-        print(response.answer)
-        print(f"\n{'='*60}")
-        print(f"Citations ({len(response.citations)}):")
-        print(f"{'='*60}")
+        out(f"\n{'='*60}\n")
+        out(f"Query: {response.query}\n")
+        out(f"{'='*60}\n\n")
+        out(response.answer + "\n")
+        out(f"\n{'='*60}\n")
+        out(f"Citations ({len(response.citations)}):\n")
+        out(f"{'='*60}\n")
         for c in response.citations:
-            print(f"  PMID: {c.pmid} | {c.title}")
-            print(f"       {c.journal} ({c.year}) | Score: {c.relevance_score:.3f}")
+            out(f"  PMID: {c.pmid} | {c.title}\n")
+            out(f"       {c.journal} ({c.year}) | Score: {c.relevance_score:.3f}\n")
 
         if isinstance(response, ValidatedResponse):
             if response.warnings:
-                print(f"\n{'='*60}")
-                print(f"Warnings ({len(response.warnings)}):")
-                print(f"{'='*60}")
+                out(f"\n{'='*60}\n")
+                out(f"Warnings ({len(response.warnings)}):\n")
+                out(f"{'='*60}\n")
                 for w in response.warnings:
-                    print(f"  [{w.severity}] {w.check}: {w.message}")
-            print(f"\n{response.disclaimer}")
+                    out(f"  [{w.severity}] {w.check}: {w.message}\n")
+            out(f"\n{response.disclaimer}\n")
 
     # Cleanup
     mesh_db.close()

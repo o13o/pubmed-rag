@@ -63,7 +63,9 @@ def _batch_to_rows(batch) -> list[dict]:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    from src.shared.logging_config import setup_logging
+
+    setup_logging()
     parser = argparse.ArgumentParser(description="Import Parquet into Milvus collection")
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--host", default="localhost")
@@ -72,7 +74,7 @@ def main() -> None:
     args = parser.parse_args()
 
     total = import_from_parquet(args.input, host=args.host, port=args.port, recreate=args.recreate)
-    print(f"Imported {total} records from {args.input}")
+    logger.info("Imported %d records from %s", total, args.input)
 
 
 if __name__ == "__main__":
