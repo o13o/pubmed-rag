@@ -145,22 +145,24 @@
   - Standard: Faithfulness, Answer Relevancy, Contextual Relevancy
   - Custom: Citation Presence, Medical Disclaimer, Methodology Quality, Statistical Validity, Clinical Relevance
 - Testing:
-  - Unit tests: 37 files covering all modules
+  - Unit tests: 38 files covering all modules
   - Integration tests: Milvus connection
   - Eval tests: End-to-end RAG quality
 - Documentation:
-  - 12 ADRs (Architecture Decision Records)
+  - 16 ADRs (Architecture Decision Records)
   - 5 design specs
 - Observability: LangFuse integration for token tracking, cost analysis, latency monitoring
 
 ### Slide 10: Scope Decisions & Future Work (30 sec)
 
 - Intentionally out of scope (Advanced/Nice-to-have):
-  - A2A agent communication -> foundation in place (BaseAgent Protocol), extension straightforward
-  - Automated literature review generation -> agents exist, orchestration is the gap
-  - PDF/DOCX upload -> transcribe endpoint already handles it, integration needed
   - Full-text retrieval handoff -> abstract-level search is the validated core
-- Message: Prioritized core quality over feature breadth
+  - Full PubMed corpus (36M+) -> 100k stratified sample sufficient for PoC (ADR-0002)
+- Delivered beyond initial scope:
+  - A2A agent pipeline (ReviewPipeline: search → 6 parallel agents → synthesis)
+  - Automated literature review generation (/review endpoint)
+  - Multimodal input (audio/image/document via /transcribe)
+- Message: Delivered core + advanced features with focus on quality
 
 ### Slide 11: Summary (30 sec)
 
@@ -192,6 +194,10 @@
 | 0010 | MeSH query expansion via DuckDB | Domain precision vs complexity |
 | 0011 | Multimodal: Whisper (audio) + GPT-4o-mini Vision (image) + PDF/DOCX extraction | Coverage vs scope |
 | 0012 | Evaluation: DeepEval + agent-based custom metrics | Depth vs standard-only |
+| 0013 | LLM provider resilience: LiteLLM + retry + fallback | Reliability vs simplicity |
+| 0014 | Retrieval resilience: graceful degradation | Availability vs consistency |
+| 0015 | Retry and circuit breaker strategy | Fault tolerance vs latency |
+| 0016 | Connection pooling for external services | Throughput vs resource usage |
 
 ### A2: Technology Comparison
 
@@ -312,9 +318,9 @@ The pipeline is designed to scale without code changes:
 
 ### A5: Test Coverage Details
 
-- Unit tests: 37 files
+- Unit tests: 38 files
   - All 8 agents
-  - All 4 API routes
+  - All 6 API routes
   - RAG chain (sync + stream)
   - Guardrails (input + output)
   - Retrieval (search, reranker, query_expander)
