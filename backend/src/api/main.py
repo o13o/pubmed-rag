@@ -12,6 +12,7 @@ from src.retrieval.client import LocalSearchClient, RemoteSearchClient
 from src.retrieval.reranker import get_reranker
 from src.shared.config import get_settings
 from src.shared.llm import LLMClient
+from src.shared.logging_config import setup_logging
 from src.shared.mesh_db import MeSHDatabase
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,8 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
+    setup_logging()
+
     app = FastAPI(
         title="PubMed RAG API",
         version="0.1.0",
