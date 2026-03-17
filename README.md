@@ -345,6 +345,8 @@ The agent logic is also reused as custom DeepEval metrics for evaluating RAG qua
 
 ## Evaluation
 
+> **Latest results:** See [docs/evaluation-results.md](docs/evaluation-results.md) for the full evaluation report with per-query metrics and latency analysis.
+
 The project uses [DeepEval](https://docs.confident-ai.com/) for RAG quality evaluation with both standard and custom metrics:
 
 ```bash
