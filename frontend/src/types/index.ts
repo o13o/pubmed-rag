@@ -117,3 +117,25 @@ export interface TranscribeResponse {
   text: string;
   media_type: "audio" | "image" | "document";
 }
+
+export interface ReviewRequest {
+  query: string;
+  year_min?: number;
+  year_max?: number;
+  journals?: string[];
+  top_k?: number;
+  search_mode?: string;
+}
+
+export interface LiteratureReview {
+  query: string;
+  overview: string;
+  main_findings: string;
+  gaps_and_conflicts: string;
+  recommendations: string;
+  citations: Citation[];
+  search_results: SearchResult[];
+  agent_results: AgentResult[];
+  agents_succeeded: number;
+  agents_failed: number;
+}
