@@ -1,0 +1,71 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant FE as Frontend<br/>(React)
+    participant API as FastAPI<br/>Backend
+    participant QE as Query<br/>Expander
+    participant MeSH as MeSH DB<br/>(DuckDB)
+    participant MV as Milvus<br/>(Hybrid Search)
+    participant RR as Reranker<br/>(Cross-Encoder)
+    participant LLM as LLM<br/>(GPT-4o-mini)
+    participant GR as Output<br/>Guardrails
+    participant LF as LangFuse
+
+    Note over User,FE: Multimodal Input (text / voice / image / document)
+
+    alt Voice / Image / Document input
+        User->>FE: Upload file
+        FE->>API: POST /transcribe
+        API-->>FE: Transcribed text
+        FE-->>User: Review & edit text
+    end
+
+    User->>FE: Submit query
+    FE->>API: POST /ask (stream: true)
+
+    rect rgb(40, 40, 60)
+        Note over API,GR: RAG Pipeline
+
+        API->>QE: Expand query
+        QE->>LLM: Extract keywords
+        LLM-->>QE: Keywords
+        QE->>MeSH: Lookup MeSH terms
+        MeSH-->>QE: Synonyms & descriptors
+        QE-->>API: Expanded query
+
+        API->>MV: Hybrid search (dense + BM25)
+        MV-->>API: Top-K candidates
+
+        API->>RR: Rerank candidates
+        RR-->>API: Reranked results
+
+        API-->>FE: SSE: citations event
+
+        API->>LLM: Generate answer (query + abstracts)
+        LLM-->>API: Answer tokens (streaming)
+        API-->>FE: SSE: token events
+
+        API->>GR: Validate output
+        GR->>LLM: Grounding check
+        LLM-->>GR: Issues (if any)
+        GR->>MeSH: Terminology check
+        MeSH-->>GR: Validation result
+        GR-->>API: Warnings + disclaimer
+
+        API-->>FE: SSE: done event
+    end
+
+    FE-->>User: Display answer + citations
+
+    LLM--)LF: Auto-trace (tokens, latency, cost)
+
+    Note over User,FE: Optional: Multi-Agent Analysis
+
+    alt User triggers analysis
+        User->>FE: Request analysis
+        FE->>API: POST /analyze
+        API->>LLM: 8 specialized agents (parallel)
+        LLM-->>API: Agent results (JSON)
+        API-->>FE: Agent analysis cards
+        FE-->>User: Display agent insights
+    end

@@ -6,27 +6,13 @@ An AI-powered multimodal medical research retrieval and analysis system that all
 
 > **Production scaling:** See [docs/production-architecture.md](docs/production-architecture.md) for POC vs Production comparison, Kubernetes deployment, and scaling to 36M+ abstracts.
 
+**System components** — shows services, data stores, and infrastructure:
+
 ![Architecture Diagram](docs/architecture.png)
 
-**Data flow:**
+**Data flow** — shows the request-level sequence through the RAG pipeline:
 
-```
-Multimodal Input (text / voice / image / document)
-  → [voice/image/doc] POST /transcribe → text (Whisper / GPT-4o-mini / PyMuPDF / python-docx)
-  → User reviews transcribed text
-
-Text Query (typed or transcribed)
-  → Input Guardrails (medical term validation)
-  → Query Expansion (MeSH term enrichment via DuckDB)
-  → Hybrid Retrieval (Dense + BM25 via RRF fusion in Milvus)
-  → Cross-Encoder Reranking
-  → LLM Answer Generation (GPT-4o-mini via LiteLLM)
-  → Output Guardrails (grounding check, hallucination detection, disclaimer)
-  → Response with Citations
-
-User can also trigger:
-  → Multi-Agent Analysis (8 specialized agents evaluate retrieved results)
-```
+![Data Flow Diagram](docs/data-flow.png)
 
 ## Tech Stack
 
