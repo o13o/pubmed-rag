@@ -1,0 +1,53 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+
+# Environment
+.env
+
+# Data files (large, generated)
+*.csv
+*.jsonl
+*.parquet
+*.bin
+*.pickle
+*.db
+*.index
+
+# Keep tracked data/config JSON files
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/tsconfig.json
+!frontend/tsconfig.app.json
+!frontend/tsconfig.node.json
+!backend/tests/eval/dataset.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# DeepEval
+backend/.deepeval/
+
+# Archives
+*.zip
+
+# PDF
+*.pdf
+
+# Milvus data
+volumes/
