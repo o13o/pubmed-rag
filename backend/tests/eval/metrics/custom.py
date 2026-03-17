@@ -12,6 +12,7 @@ class CitationPresenceMetric(BaseMetric):
 
     def __init__(self, threshold: float = 0.5):
         self.threshold = threshold
+        self.score = 0.0
 
     def measure(self, test_case: LLMTestCase) -> float:
         if not test_case.actual_output:
@@ -26,6 +27,9 @@ class CitationPresenceMetric(BaseMetric):
         self.reason = f"Found {len(citations)} PMID citation(s)"
         return self.score
 
+    async def a_measure(self, test_case: LLMTestCase, *args, **kwargs) -> float:
+        return self.measure(test_case)
+
     def is_successful(self) -> bool:
         return self.score >= self.threshold
 
@@ -39,6 +43,7 @@ class MedicalDisclaimerMetric(BaseMetric):
 
     def __init__(self, threshold: float = 1.0):
         self.threshold = threshold
+        self.score = 0.0
 
     def measure(self, test_case: LLMTestCase) -> float:
         if not test_case.actual_output:
@@ -51,6 +56,9 @@ class MedicalDisclaimerMetric(BaseMetric):
         self.score = 1.0 if found else 0.0
         self.reason = "Disclaimer present" if found else "No disclaimer found"
         return self.score
+
+    async def a_measure(self, test_case: LLMTestCase, *args, **kwargs) -> float:
+        return self.measure(test_case)
 
     def is_successful(self) -> bool:
         return self.score >= self.threshold
@@ -87,6 +95,7 @@ class MethodologyQualityMetric(BaseMetric):
 
     def __init__(self, threshold: float = 0.5, llm_model: str = "gpt-4o-mini"):
         self.threshold = threshold
+        self.score = 0.0
         self.llm = LLMClient(model=llm_model)
 
     def measure(self, test_case: LLMTestCase) -> float:
@@ -102,6 +111,9 @@ class MethodologyQualityMetric(BaseMetric):
         self.reason = result.summary
         return self.score
 
+    async def a_measure(self, test_case: LLMTestCase, *args, **kwargs) -> float:
+        return self.measure(test_case)
+
     def is_successful(self) -> bool:
         return self.score >= self.threshold
 
@@ -115,6 +127,7 @@ class StatisticalValidityMetric(BaseMetric):
 
     def __init__(self, threshold: float = 0.5, llm_model: str = "gpt-4o-mini"):
         self.threshold = threshold
+        self.score = 0.0
         self.llm = LLMClient(model=llm_model)
 
     def measure(self, test_case: LLMTestCase) -> float:
@@ -130,6 +143,9 @@ class StatisticalValidityMetric(BaseMetric):
         self.reason = result.summary
         return self.score
 
+    async def a_measure(self, test_case: LLMTestCase, *args, **kwargs) -> float:
+        return self.measure(test_case)
+
     def is_successful(self) -> bool:
         return self.score >= self.threshold
 
@@ -143,6 +159,7 @@ class ClinicalRelevanceMetric(BaseMetric):
 
     def __init__(self, threshold: float = 0.5, llm_model: str = "gpt-4o-mini"):
         self.threshold = threshold
+        self.score = 0.0
         self.llm = LLMClient(model=llm_model)
 
     def measure(self, test_case: LLMTestCase) -> float:
@@ -157,6 +174,9 @@ class ClinicalRelevanceMetric(BaseMetric):
         self.score = (result.score or 0) / 10
         self.reason = result.summary
         return self.score
+
+    async def a_measure(self, test_case: LLMTestCase, *args, **kwargs) -> float:
+        return self.measure(test_case)
 
     def is_successful(self) -> bool:
         return self.score >= self.threshold

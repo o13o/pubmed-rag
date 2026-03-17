@@ -1,4 +1,4 @@
-# Evaluation Results
+# Evaluation Results (Full Metrics)
 
 Evaluation run: 2026-03-17
 Dataset: 10 medical research queries (see `backend/tests/eval/dataset.json`)
@@ -7,79 +7,90 @@ Corpus: 100,000 PubMed abstracts
 
 ## Summary
 
-### Accuracy Metrics (DeepEval + Custom)
+### Standard Metrics (DeepEval)
 
-| Metric | Avg | Min | Max | Threshold | Pass Rate |
-|--------|-----|-----|-----|-----------|-----------|
-| **Faithfulness** | 0.856 | 0.200 | 1.000 | 0.7 | 8/10 |
-| **Answer Relevancy** | 0.815 | 0.000 | 1.000 | 0.7 | 8/10 |
-| **Citation Presence** | 0.900 | 0.000 | 1.000 | 0.5 | 9/10 |
-| **Medical Disclaimer** | 1.000 | 1.000 | 1.000 | 1.0 | 10/10 |
+| Metric | Threshold | Pass Rate | Description |
+|--------|-----------|-----------|-------------|
+| **Faithfulness** | 0.7 | 9/10 | Is the answer grounded in retrieved abstracts? |
+| **Answer Relevancy** | 0.7 | 8/10 | Does the answer address the user's query? |
+| **Contextual Relevancy** | 0.5 | 7/10 | Are the retrieved contexts relevant to the query? |
 
-- **Faithfulness** — Is the generated answer grounded in the retrieved abstracts? Evaluated by GPT-4o-mini via DeepEval.
-- **Answer Relevancy** — Does the answer address the user's query? Evaluated by GPT-4o-mini via DeepEval.
-- **Citation Presence** — Does the answer include PMID citations? Regex-based check.
-- **Medical Disclaimer** — Is a medical disclaimer appended? Keyword-based check.
+### Custom Metrics
 
-### Latency
+| Metric | Threshold | Pass Rate | Description |
+|--------|-----------|-----------|-------------|
+| **Citation Presence** | 0.5 | 9/10 | Does the answer include PMID citations? (regex) |
+| **Medical Disclaimer** | 1.0 | 10/10 | Is a medical disclaimer appended? (keyword) |
+| **Methodology Quality** | 0.5 | 10/10 | Study design and methodological rigor (via MethodologyCriticAgent) |
+| **Statistical Validity** | 0.5 | 9/10 | Statistical methods and significance (via StatisticalReviewerAgent) |
+| **Clinical Relevance** | 0.5 | 10/10 | Real-world clinical applicability (via ClinicalApplicabilityAgent) |
 
-| Metric | Avg | P50 | P99 |
-|--------|-----|-----|-----|
-| **End-to-end /ask** (full RAG pipeline) | 16.51s | 18.47s | 22.51s |
-| **Search-only /search** (retrieval + reranking) | 1.00s | 0.32s | 6.68s |
+### Overall
 
-The `/ask` latency includes: query expansion → hybrid search → cross-encoder reranking → LLM generation → output guardrails (grounding check via additional LLM call). The majority of latency comes from the LLM generation and guardrail validation steps.
+- **6/10 queries passed all 8 metrics**
+- **4/10 queries failed on 1-2 metrics** (retrieval quality issues, not system errors)
+- Total evaluation time: ~14 minutes (10 queries x 8 metrics, sequential execution)
 
 ## Per-Query Results
 
-| # | Query | Ask (s) | Search (s) | Faithfulness | Relevancy | Citations | Disclaimer | Grounded |
-|---|-------|---------|------------|-------------|-----------|-----------|------------|----------|
-| 1 | Latest treatments for early-stage pancreatic cancer | 9.36 | 0.44 | 0.200 | 0.000 | 1.0 | 1.0 | Yes |
-| 2 | Non-invasive therapies for knee osteoarthritis | 18.47 | 6.68 | 0.917 | 0.750 | 1.0 | 1.0 | Yes |
-| 3 | mRNA vaccine efficacy and safety after 2022 | 20.20 | 0.29 | 0.857 | 1.000 | 1.0 | 1.0 | No |
-| 4 | CRISPR gene therapy for sickle cell disease | 17.71 | 0.29 | 1.000 | 0.917 | 1.0 | 1.0 | Yes |
-| 5 | Gut microbiome and immune checkpoint inhibitors | 5.63 | 0.35 | 0.667 | 0.750 | 0.0 | 1.0 | Yes |
-| 6 | GLP-1 receptor agonists in type 2 diabetes | 20.10 | 0.32 | 1.000 | 0.733 | 1.0 | 1.0 | Yes |
-| 7 | ML for early detection of Alzheimer's disease | 21.47 | 0.30 | 1.000 | 1.000 | 1.0 | 1.0 | No |
-| 8 | Robotic vs. laparoscopic surgery for colorectal cancer | 22.51 | 0.73 | 1.000 | 1.000 | 1.0 | 1.0 | No |
-| 9 | Long COVID cardiovascular complications | 14.02 | 0.28 | 1.000 | 1.000 | 1.0 | 1.0 | No |
-| 10 | CAR-T cell therapy for relapsed DLBCL | 15.58 | 0.27 | 1.000 | 1.000 | 1.0 | 1.0 | Yes |
+| # | Query | Faith. | Ans.Rel. | Ctx.Rel. | Citation | Disclaimer | Method. | Stat. | Clinical | Result |
+|---|-------|--------|----------|----------|----------|------------|---------|-------|----------|--------|
+| 1 | Latest treatments for early-stage pancreatic cancer | PASS | 0.17 FAIL | 0.30 FAIL | PASS | PASS | PASS | PASS | PASS | FAIL |
+| 2 | Non-invasive therapies for knee osteoarthritis | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| 3 | mRNA vaccine efficacy after 2022 | PASS | PASS | 0.43 FAIL | PASS | PASS | PASS | PASS | PASS | FAIL |
+| 4 | CRISPR gene therapy for sickle cell disease | PASS | PASS | 0.18 FAIL | PASS | PASS | PASS | 0.4 FAIL | PASS | FAIL |
+| 5 | Gut microbiome + immune checkpoint inhibitors | PASS | 0.33 FAIL | PASS | 0.0 FAIL | PASS | PASS | PASS | PASS | FAIL |
+| 6 | GLP-1 receptor agonists in type 2 diabetes | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| 7 | ML for early detection of Alzheimer's disease | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| 8 | Robotic vs. laparoscopic surgery for colorectal cancer | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| 9 | Long COVID cardiovascular complications | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| 10 | CAR-T cell therapy for relapsed DLBCL | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
 
-## Analysis
+## Failure Analysis
 
-### Strengths
+### Query 1: Pancreatic cancer (Answer Relevancy 0.17, Contextual Relevancy 0.30)
+The query specifies "early-stage" pancreatic cancer, but the retrieved abstracts primarily discuss advanced/metastatic PDAC. The 100k corpus may lack sufficient early-stage-specific literature, and the semantic search does not distinguish disease stage effectively.
 
-- **High faithfulness** (avg 0.856): The system generates answers well-grounded in retrieved abstracts. 6/10 queries scored 1.0 (perfectly grounded).
-- **Strong answer relevancy** (avg 0.815): Responses directly address the medical research queries.
-- **Consistent guardrails**: Medical disclaimer is present in 100% of responses. Citation presence at 90%.
+### Query 3: mRNA vaccine after 2022 (Contextual Relevancy 0.43)
+The temporal filter "after 2022" is expressed in natural language rather than as a metadata filter. Many retrieved abstracts predate 2022. Using `year_min: 2022` as an explicit filter would improve results.
 
-### Areas for Improvement
+### Query 4: CRISPR for sickle cell (Contextual Relevancy 0.18, Statistical Validity 0.4)
+Retrieved contexts discuss CRISPR gene therapy broadly rather than sickle cell disease specifically. The corpus may have limited sickle-cell-specific CRISPR studies within the 100k sample.
 
-- **Query 1 (pancreatic cancer)**: Low faithfulness (0.200) and relevancy (0.000). This is the most specific clinical query — the system may be retrieving broadly related but not precisely matching abstracts for this narrow topic.
-- **Query 5 (gut microbiome + immunotherapy)**: No PMID citations in the answer text. The cross-domain nature of the query (microbiome + oncology) may lead to answers that summarize without specific citations.
-- **Grounding check (is_grounded)**: 4/10 queries flagged as "not grounded" by the output guardrail. This is the LLM-based grounding check being conservative — it flags answers that include inferences or summaries not verbatim in the abstracts, which is expected for synthesis-style answers.
+### Query 5: Gut microbiome + checkpoint inhibitors (Answer Relevancy 0.33, Citation Presence 0.0)
+Cross-domain query spanning microbiome and oncology. The LLM answer included extensive disclaimers that diluted relevancy scoring. No PMID citations were embedded in the answer text.
 
-### Latency Breakdown
+## Agent-Based Custom Metrics
 
-- Search-only latency (p50 = 0.32s) is fast, demonstrating that hybrid retrieval + reranking performs well at 100k scale.
-- End-to-end latency (avg 16.51s) is dominated by LLM calls: one for answer generation and one for guardrail validation. This is a known trade-off for the guardrail architecture (see ADR-0008).
-- The latency outlier (Query 2, search = 6.68s) appears to be a cold-start effect or Milvus cache miss.
+The three new custom metrics leverage the multi-agent system as DeepEval evaluators:
 
-## Methodology
+- **Methodology Quality** (MethodologyCriticAgent): Evaluates study design, bias risk, and methodological rigor across retrieved abstracts. Scored 1-10, normalized to 0-1. Passed 10/10 at threshold 0.5.
+- **Statistical Validity** (StatisticalReviewerAgent): Analyzes statistical methods, significance reporting, and sample sizes. Passed 9/10 (failed on CRISPR query where abstracts lacked rigorous statistical data).
+- **Clinical Relevance** (ClinicalApplicabilityAgent): Assesses real-world clinical applicability of retrieved research. Passed 10/10.
 
-1. Each query is sent to the `/ask` endpoint (full RAG pipeline) and `/search` endpoint (retrieval only).
-2. DeepEval standard metrics (Faithfulness, Answer Relevancy) are computed using GPT-4o-mini as the judge model.
-3. Custom metrics (Citation Presence, Medical Disclaimer) use deterministic checks (regex, keyword matching).
-4. Latency is measured wall-clock time for each API call.
-5. The Contextual Precision metric was excluded because it requires ground-truth expected output, which is not available for open-ended medical research queries.
+These metrics demonstrate that the multi-agent analysis system can serve dual purposes: runtime research analysis and offline RAG quality evaluation.
+
+## Comparison with Basic Evaluation
+
+| Metric | Basic Run (5 metrics) | Full Run (8 metrics) |
+|--------|----------------------|---------------------|
+| Faithfulness | 8/10 pass | 9/10 pass |
+| Answer Relevancy | 8/10 pass | 8/10 pass |
+| Citation Presence | 9/10 pass | 9/10 pass |
+| Medical Disclaimer | 10/10 pass | 10/10 pass |
+| Contextual Relevancy | — | 7/10 pass |
+| Methodology Quality | — | 10/10 pass |
+| Statistical Validity | — | 9/10 pass |
+| Clinical Relevance | — | 10/10 pass |
+
+The Contextual Relevancy metric (replacing Contextual Precision which required expected_output) is the strictest metric, correctly identifying retrieval gaps for niche queries in the 100k sample.
 
 ## Reproduction
 
 ```bash
 cd capstone/backend
 
-# Requires: Milvus running, data ingested, API server running, OPENAI_API_KEY set
-.venv/bin/python scripts/run_evaluation.py > data/eval_results.json
+# Requires: Milvus running, data ingested, OPENAI_API_KEY set
+# Note: stop the backend server first to avoid DuckDB lock conflicts
+uv run pytest tests/eval/test_rag_evaluation.py -v
 ```
-
-Full raw results are saved to `backend/data/eval_results.json`.

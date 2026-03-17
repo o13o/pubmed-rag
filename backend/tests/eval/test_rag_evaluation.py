@@ -12,14 +12,17 @@ import pytest
 from deepeval import assert_test
 from deepeval.metrics import (
     AnswerRelevancyMetric,
-    ContextualPrecisionMetric,
+    ContextualRelevancyMetric,
     FaithfulnessMetric,
 )
 from deepeval.test_case import LLMTestCase
 
 from tests.eval.metrics.custom import (
     CitationPresenceMetric,
+    ClinicalRelevanceMetric,
     MedicalDisclaimerMetric,
+    MethodologyQualityMetric,
+    StatisticalValidityMetric,
 )
 
 
@@ -29,9 +32,12 @@ DATASET_PATH = Path(__file__).parent / "dataset.json"
 METRICS = [
     FaithfulnessMetric(threshold=0.7, model="gpt-4o-mini"),
     AnswerRelevancyMetric(threshold=0.7, model="gpt-4o-mini"),
-    ContextualPrecisionMetric(threshold=0.7, model="gpt-4o-mini"),
+    ContextualRelevancyMetric(threshold=0.5, model="gpt-4o-mini"),
     CitationPresenceMetric(threshold=0.5),
     MedicalDisclaimerMetric(threshold=1.0),
+    MethodologyQualityMetric(threshold=0.5),
+    StatisticalValidityMetric(threshold=0.5),
+    ClinicalRelevanceMetric(threshold=0.5),
 ]
 
 
@@ -106,5 +112,4 @@ def test_rag_quality(eval_case):
         retrieval_context=context,
     )
 
-    for metric in METRICS:
-        assert_test(test_case, [metric])
+    assert_test(test_case, METRICS)

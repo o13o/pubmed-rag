@@ -346,7 +346,7 @@ uv run pytest tests/eval/test_rag_evaluation.py -v
 **Standard Metrics:**
 - **Faithfulness** — Is the answer grounded in retrieved context?
 - **Answer Relevancy** — Does the answer address the query?
-- **Contextual Precision** — Are relevant contexts ranked higher?
+- **Contextual Relevancy** — Are the retrieved contexts relevant to the query?
 
 **Custom Metrics:**
 - **Citation Presence** — Are PMID citations included in the response?
