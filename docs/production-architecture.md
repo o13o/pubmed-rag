@@ -193,3 +193,60 @@ spec:
         type: Utilization
         averageUtilization: 70
 ```
+
+## Performance Testing Strategy
+
+The system includes a layered load testing approach to validate performance at each level independently.
+
+### Test Layers
+
+| Layer | Tool | Target | What it measures |
+|-------|------|--------|-----------------|
+| **Milvus search engine** | Locust + pymilvus | `collection.search()` / `hybrid_search()` directly | Pure search latency & throughput, no API/LLM overhead |
+| **HTTP API** | Locust + HttpUser | FastAPI endpoints (`/search`, `/ask`, `/analyze`) | End-to-end latency including embedding, LLM, guardrails |
+
+This separation allows pinpointing bottlenecks: if API latency is high but Milvus latency is low, the problem is in embedding/LLM/reranking, not the vector database.
+
+### Key Metrics
+
+| Metric | Target (PoC) | Target (Production 36M+) |
+|--------|-------------|--------------------------|
+| Dense search p95 | < 100ms | < 200ms |
+| Hybrid search p95 | < 200ms | < 500ms |
+| Search RPS (single node) | > 50 | > 200 (distributed) |
+| `/ask` end-to-end p95 | < 5s | < 5s (LLM-bound) |
+| Error rate | < 1% | < 0.1% |
+
+### Scalability Validation Plan
+
+To validate that the system handles 36M+ abstracts, run the Milvus load test at increasing data scales and compare:
+
+```
+Data scale     Ingested records    Test command
+──────────     ────────────────    ─────────────────────────────────────────────
+Small (PoC)    100K                locust --headless -u 20 -r 5 -t 60s --csv=results_100k
+Medium         1M                  locust --headless -u 20 -r 5 -t 60s --csv=results_1m
+Large          10M                 locust --headless -u 20 -r 5 -t 60s --csv=results_10m
+Full PubMed    36M                 locust --headless -u 20 -r 5 -t 60s --csv=results_36m
+```
+
+Compare CSV outputs across scales to identify:
+- **Latency degradation**: How does p95 grow with data volume? HNSW should be sublinear (O(log N)).
+- **Throughput ceiling**: At what concurrency does RPS plateau?
+- **Filter overhead**: Does metadata filtering cost more at larger scales?
+- **Hybrid vs dense gap**: Does BM25 sparse index scale differently from HNSW?
+
+### Test Scripts
+
+```
+loadtest/
+├── api/            # HTTP API load test
+│   ├── locustfile.py
+│   └── README.md
+├── milvus/         # Milvus direct search load test
+│   ├── locustfile.py
+│   └── README.md
+└── README.md
+```
+
+See each subdirectory README for usage instructions.
