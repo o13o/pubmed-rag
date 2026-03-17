@@ -19,8 +19,8 @@
 ### Task 1: Integrate Reranker + Guardrails into RAG Chain
 
 **Files:**
-- Modify: `capstone/backend/src/rag/chain.py`
-- Modify: `capstone/backend/tests/unit/test_chain.py`
+- Modify: `backend/src/rag/chain.py`
+- Modify: `backend/tests/unit/test_chain.py`
 
 - [ ] **Step 1: Write failing tests for updated chain**
 
@@ -138,7 +138,7 @@ def test_ask_with_no_results(mock_expander_cls, mock_search):
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_chain.py -v
 ```
 
@@ -255,7 +255,7 @@ __all__ = ["ask"]
 - [ ] **Step 5: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_chain.py -v
 ```
 
@@ -264,7 +264,7 @@ Expected: All 3 tests PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/src/rag/chain.py capstone/backend/src/rag/__init__.py capstone/backend/tests/unit/test_chain.py
+git add backend/src/rag/chain.py backend/src/rag/__init__.py backend/tests/unit/test_chain.py
 git commit -m "feat(rag): integrate reranker and guardrails into chain pipeline"
 ```
 
@@ -273,7 +273,7 @@ git commit -m "feat(rag): integrate reranker and guardrails into chain pipeline"
 ### Task 2: Update CLI with Phase B Flags
 
 **Files:**
-- Modify: `capstone/backend/src/cli.py`
+- Modify: `backend/src/cli.py`
 
 - [ ] **Step 1: Update CLI with new arguments**
 
@@ -399,7 +399,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/backend/src/cli.py
+git add backend/src/cli.py
 git commit -m "feat(cli): add --search-mode, --reranker, --no-guardrails flags"
 ```
 
@@ -410,17 +410,17 @@ git commit -m "feat(cli): add --search-mode, --reranker, --no-guardrails flags"
 ### Task 3: DeepEval Evaluation Pipeline
 
 **Files:**
-- Create: `capstone/backend/tests/eval/__init__.py`
-- Create: `capstone/backend/tests/eval/conftest.py`
-- Create: `capstone/backend/tests/eval/dataset.json`
-- Create: `capstone/backend/tests/eval/metrics/__init__.py`
-- Create: `capstone/backend/tests/eval/metrics/custom.py`
-- Create: `capstone/backend/tests/eval/test_rag_evaluation.py`
+- Create: `backend/tests/eval/__init__.py`
+- Create: `backend/tests/eval/conftest.py`
+- Create: `backend/tests/eval/dataset.json`
+- Create: `backend/tests/eval/metrics/__init__.py`
+- Create: `backend/tests/eval/metrics/custom.py`
+- Create: `backend/tests/eval/test_rag_evaluation.py`
 
 - [ ] **Step 1: Create eval directory structure**
 
 ```bash
-cd capstone/backend
+cd backend
 mkdir -p tests/eval/metrics
 ```
 
@@ -672,7 +672,7 @@ def test_rag_quality(eval_case):
 - [ ] **Step 7: Commit**
 
 ```bash
-git add capstone/backend/tests/eval/
+git add backend/tests/eval/
 git commit -m "feat(eval): add DeepEval evaluation pipeline with custom metrics"
 ```
 
@@ -683,7 +683,7 @@ git commit -m "feat(eval): add DeepEval evaluation pipeline with custom metrics"
 - [ ] **Step 1: Run all unit tests**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/ -v
 ```
 

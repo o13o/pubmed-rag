@@ -1,7 +1,7 @@
 """Locust load test for PubMed RAG API.
 
 Usage:
-    cd capstone/loadtest
+    cd loadtest/api
     pip install locust
     locust                          # Web UI at http://localhost:8089
     locust --headless -u 10 -r 2 -t 60s  # Headless: 10 users, ramp 2/s, 60s

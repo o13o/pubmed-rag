@@ -2,7 +2,7 @@
 
 ## Overview
 
-Extract `capstone/` from `fde-training` into a standalone GitHub repository `pubmed-rag`, preserving git history.
+Extract the repository root from `fde-training` into a standalone GitHub repository `pubmed-rag`, preserving git history.
 
 ## Prerequisites
 
@@ -14,12 +14,12 @@ brew install git-filter-repo
 
 ## Migration Script
 
-A migration script is provided at `capstone/scripts/migrate-repo.sh`. Run it from any directory — it creates a fresh clone and does not modify your working copy.
+A migration script is provided at `scripts/migrate-repo.sh`. Run it from any directory — it creates a fresh clone and does not modify your working copy.
 
 ## What the Script Does
 
 1. **Fresh clone** — Clones `fde-training` into a temp directory (avoids touching your working copy)
-2. **Extract capstone/** — `git filter-repo --subdirectory-filter capstone` rewrites history to only include commits touching `capstone/`, and removes the `capstone/` prefix from all paths
+2. **Extract capstone/** — `git filter-repo --subdirectory-filter capstone` rewrites history to only include commits touching the repository root, and removes the the repository root prefix from all paths
 3. **Fix .gitignore** — The root `.gitignore` in `fde-training` has broad rules (e.g. `*.json`, `*.csv`) that are specific to the training repo. The script generates a clean `.gitignore` suited for the standalone project
 4. **Output** — A ready-to-push local repo at `~/0/pubmed-rag`
 
@@ -37,7 +37,7 @@ A migration script is provided at `capstone/scripts/migrate-repo.sh`. Run it fro
 
 2. **Verify**
    - `git log --oneline | wc -l` — should show ~143 commits (capstone-related)
-   - Check that paths no longer have `capstone/` prefix
+   - Check that paths no longer have the repository root prefix
    - `backend/`, `frontend/`, `loadtest/`, `docs/` should be at the root
 
 3. **fde-training の扱い**
@@ -66,6 +66,6 @@ pubmed-rag/               # was capstone/
 | Risk | Mitigation |
 |------|-----------|
 | Working copy corruption | Script uses a fresh clone, never modifies your working directory |
-| Lost commits | `filter-repo` only keeps commits that touch `capstone/`; commits that only touch root `.gitignore` may be lost. Acceptable — those are trivial |
+| Lost commits | `filter-repo` only keeps commits that touch the repository root; commits that only touch root `.gitignore` may be lost. Acceptable — those are trivial |
 | Broken .gitignore | Script generates a new clean `.gitignore` for the standalone project |
 | Submodule/CI references | Not applicable (no submodules, no CI currently) |

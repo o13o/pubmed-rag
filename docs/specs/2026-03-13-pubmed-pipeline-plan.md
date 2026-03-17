@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10+, `datasets` (HuggingFace), `pyyaml`, `xml.etree.ElementTree`, standard library (`json`, `random`, `collections`, `datetime`, `pathlib`, `argparse`)
 
-**Spec:** `capstone/docs/specs/2026-03-13-pubmed-download-pipeline-design.md`
+**Spec:** `docs/specs/2026-03-13-pubmed-download-pipeline-design.md`
 
 ---
 
@@ -16,16 +16,16 @@
 
 | File | Responsibility |
 |---|---|
-| `capstone/playground/pubmed_pipeline/config.yaml` | Pipeline configuration (years, language, sampling params, MeSH categories, paths) |
-| `capstone/playground/pubmed_pipeline/download_hf.py` | Download PubMed from HuggingFace, parse XML, write raw JSONL |
-| `capstone/playground/pubmed_pipeline/sample.py` | Read raw JSONL, filter, stratified sample with MeSH coverage, write final JSONL + audit log |
-| `capstone/playground/pubmed_pipeline/README.md` | Usage instructions |
-| `capstone/playground/pubmed_pipeline/tests/test_download_hf.py` | Tests for XML parsing and record conversion |
-| `capstone/playground/pubmed_pipeline/tests/test_sample.py` | Tests for filtering, sampling, MeSH matching |
-| `capstone/playground/pubmed_pipeline/conftest.py` | pytest path configuration for bare module imports |
-| `capstone/playground/pubmed_pipeline/data/.gitignore` | Ignore generated data files |
-| `capstone/playground/pubmed_pipeline/data/raw/.gitkeep` | Placeholder for raw output directory |
-| `capstone/playground/pubmed_pipeline/data/processed/.gitkeep` | Placeholder for processed output directory |
+| `data_pipeline/config.yaml` | Pipeline configuration (years, language, sampling params, MeSH categories, paths) |
+| `data_pipeline/download_hf.py` | Download PubMed from HuggingFace, parse XML, write raw JSONL |
+| `data_pipeline/sample.py` | Read raw JSONL, filter, stratified sample with MeSH coverage, write final JSONL + audit log |
+| `data_pipeline/README.md` | Usage instructions |
+| `data_pipeline/tests/test_download_hf.py` | Tests for XML parsing and record conversion |
+| `data_pipeline/tests/test_sample.py` | Tests for filtering, sampling, MeSH matching |
+| `data_pipeline/conftest.py` | pytest path configuration for bare module imports |
+| `data_pipeline/data/.gitignore` | Ignore generated data files |
+| `data_pipeline/data/raw/.gitkeep` | Placeholder for raw output directory |
+| `data_pipeline/data/processed/.gitkeep` | Placeholder for processed output directory |
 
 ---
 
@@ -34,24 +34,24 @@
 ### Task 1: Create directory structure and config.yaml
 
 **Files:**
-- Create: `capstone/playground/pubmed_pipeline/config.yaml`
-- Create: `capstone/playground/pubmed_pipeline/conftest.py`
-- Create: `capstone/playground/pubmed_pipeline/data/.gitignore`
-- Create: `capstone/playground/pubmed_pipeline/data/raw/.gitkeep`
-- Create: `capstone/playground/pubmed_pipeline/data/processed/.gitkeep`
+- Create: `data_pipeline/config.yaml`
+- Create: `data_pipeline/conftest.py`
+- Create: `data_pipeline/data/.gitignore`
+- Create: `data_pipeline/data/raw/.gitkeep`
+- Create: `data_pipeline/data/processed/.gitkeep`
 
 - [ ] **Step 1: Create directory placeholders and support files**
 
 ```bash
-mkdir -p capstone/playground/pubmed_pipeline/data/raw
-mkdir -p capstone/playground/pubmed_pipeline/data/processed
-mkdir -p capstone/playground/pubmed_pipeline/tests
-touch capstone/playground/pubmed_pipeline/data/raw/.gitkeep
-touch capstone/playground/pubmed_pipeline/data/processed/.gitkeep
-touch capstone/playground/pubmed_pipeline/tests/__init__.py
+mkdir -p data_pipeline/data/raw
+mkdir -p data_pipeline/data/processed
+mkdir -p data_pipeline/tests
+touch data_pipeline/data/raw/.gitkeep
+touch data_pipeline/data/processed/.gitkeep
+touch data_pipeline/tests/__init__.py
 ```
 
-Create `capstone/playground/pubmed_pipeline/conftest.py` to ensure pytest can import modules from the project root:
+Create `data_pipeline/conftest.py` to ensure pytest can import modules from the project root:
 
 ```python
 import sys
@@ -60,7 +60,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 ```
 
-Create `capstone/playground/pubmed_pipeline/data/.gitignore` to prevent committing generated data:
+Create `data_pipeline/data/.gitignore` to prevent committing generated data:
 
 ```gitignore
 *.jsonl
@@ -102,7 +102,7 @@ paths:
 - [ ] **Step 3: Commit**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 git add .
 git commit -m "scaffold: pubmed_pipeline directory structure and config.yaml"
 ```
@@ -114,7 +114,7 @@ git commit -m "scaffold: pubmed_pipeline directory structure and config.yaml"
 ### Task 2: Write tests for XML-to-JSONL record conversion
 
 **Files:**
-- Create: `capstone/playground/pubmed_pipeline/tests/test_download_hf.py`
+- Create: `data_pipeline/tests/test_download_hf.py`
 
 - [ ] **Step 1: Write test for parsing a complete MedlineCitation XML**
 
@@ -266,7 +266,7 @@ def test_parse_medline_xml_full_date():
 - [ ] **Step 4: Run tests to verify they fail**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -m pytest tests/test_download_hf.py -v
 ```
 
@@ -282,7 +282,7 @@ git commit -m "test: add XML parsing tests for download_hf"
 ### Task 3: Implement parse_medline_xml and download_hf.py
 
 **Files:**
-- Create: `capstone/playground/pubmed_pipeline/download_hf.py`
+- Create: `data_pipeline/download_hf.py`
 
 - [ ] **Step 1: Implement parse_medline_xml function**
 
@@ -390,7 +390,7 @@ def parse_medline_xml(xml_string: str) -> dict:
 - [ ] **Step 2: Run tests to verify they pass**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -m pytest tests/test_download_hf.py -v
 ```
 
@@ -472,7 +472,7 @@ git commit -m "feat: implement download_hf.py with XML parsing and HuggingFace s
 ### Task 4: Write tests for filtering logic
 
 **Files:**
-- Create: `capstone/playground/pubmed_pipeline/tests/test_sample.py`
+- Create: `data_pipeline/tests/test_sample.py`
 
 - [ ] **Step 1: Write test fixtures — sample records**
 
@@ -537,7 +537,7 @@ def test_match_mesh_category_empty():
 - [ ] **Step 4: Run tests to verify they fail**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -m pytest tests/test_sample.py -v
 ```
 
@@ -553,7 +553,7 @@ git commit -m "test: add filter and MeSH matching tests for sample.py"
 ### Task 5: Implement filtering and MeSH matching
 
 **Files:**
-- Create: `capstone/playground/pubmed_pipeline/sample.py`
+- Create: `data_pipeline/sample.py`
 
 - [ ] **Step 1: Implement filter_records and match_mesh_category**
 
@@ -608,7 +608,7 @@ def filter_records(records: list[dict], config: dict) -> list[dict]:
 - [ ] **Step 2: Run tests to verify filter and MeSH tests pass**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -m pytest tests/test_sample.py -v
 ```
 
@@ -624,7 +624,7 @@ git commit -m "feat: implement filter_records and match_mesh_category"
 ### Task 6: Write tests for stratified sampling logic
 
 **Files:**
-- Modify: `capstone/playground/pubmed_pipeline/tests/test_sample.py`
+- Modify: `data_pipeline/tests/test_sample.py`
 
 - [ ] **Step 1: Write test for stratified_sample**
 
@@ -771,7 +771,7 @@ def test_stratified_sample_shortfall_logged():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -m pytest tests/test_sample.py::test_stratified_sample_basic -v
 ```
 
@@ -787,7 +787,7 @@ git commit -m "test: add stratified sampling tests"
 ### Task 7: Implement stratified_sample
 
 **Files:**
-- Modify: `capstone/playground/pubmed_pipeline/sample.py`
+- Modify: `data_pipeline/sample.py`
 
 - [ ] **Step 1: Implement stratified_sample function**
 
@@ -878,7 +878,7 @@ def stratified_sample(records: list[dict], config: dict) -> tuple[list[dict], di
 - [ ] **Step 2: Run all sample tests**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -m pytest tests/test_sample.py -v
 ```
 
@@ -894,7 +894,7 @@ git commit -m "feat: implement stratified_sample with MeSH coverage"
 ### Task 8: Add main CLI to sample.py
 
 **Files:**
-- Modify: `capstone/playground/pubmed_pipeline/sample.py`
+- Modify: `data_pipeline/sample.py`
 
 - [ ] **Step 1: Implement main function**
 
@@ -962,7 +962,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Run all tests to make sure nothing broke**
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -m pytest tests/ -v
 ```
 
@@ -982,7 +982,7 @@ git commit -m "feat: add CLI main to sample.py with JSONL and audit log output"
 ### Task 9: Write README.md
 
 **Files:**
-- Create: `capstone/playground/pubmed_pipeline/README.md`
+- Create: `data_pipeline/README.md`
 
 - [ ] **Step 1: Create README.md**
 
@@ -990,7 +990,7 @@ git commit -m "feat: add CLI main to sample.py with JSONL and audit log output"
 # PubMed Pipeline (Playground)
 
 Toy implementation of the PubMed data download & sampling pipeline.
-See `capstone/docs/specs/2026-03-13-pubmed-download-pipeline-design.md` for full design.
+See `docs/specs/2026-03-13-pubmed-download-pipeline-design.md` for full design.
 
 ## Setup
 
@@ -1050,7 +1050,7 @@ git commit -m "docs: add README for pubmed_pipeline playground"
 Before running the full pipeline, verify the actual record structure from HuggingFace matches our assumption. Run:
 
 ```bash
-cd capstone/playground/pubmed_pipeline
+cd data_pipeline/pubmed_pipeline
 python -c "
 from datasets import load_dataset
 ds = load_dataset('ncbi/pubmed', streaming=True, split='train')
@@ -1099,6 +1099,6 @@ Expected: All tests PASS
 - [ ] **Step 6: Final commit**
 
 ```bash
-git add capstone/playground/pubmed_pipeline/
+git add data_pipeline/
 git commit -m "feat: pubmed_pipeline playground — complete toy implementation"
 ```

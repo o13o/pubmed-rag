@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, Tailwind CSS 4, native FormData/fetch
 
-**Spec:** `capstone/docs/specs/2026-03-16-multimodal-transcribe-design.md`
+**Spec:** `docs/specs/2026-03-16-multimodal-transcribe-design.md`
 
 **Parallel:** This plan can run in parallel with `2026-03-16-multimodal-a-backend.md`.
 
@@ -74,7 +74,7 @@ export async function transcribeFile(
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/frontend/src/types/index.ts capstone/frontend/src/lib/api.ts
+git add frontend/src/types/index.ts frontend/src/lib/api.ts
 git commit -m "feat(frontend): add transcribeFile API function"
 ```
 
@@ -211,13 +211,13 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
 
 - [ ] **Step 2: Verify build passes**
 
-Run: `cd capstone/frontend && npm run build`
+Run: `cd frontend && npm run build`
 Expected: Build succeeds with no errors
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/frontend/src/components/ChatPanel.tsx
+git add frontend/src/components/ChatPanel.tsx
 git commit -m "feat(frontend): add file upload button for audio/image transcription"
 ```
 
@@ -249,6 +249,6 @@ Add inside the `location` block (after `proxy_read_timeout 300s;`):
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/frontend/nginx.conf
+git add frontend/nginx.conf
 git commit -m "fix(nginx): proxy /transcribe endpoint and allow 25MB uploads"
 ```

@@ -2,9 +2,9 @@
 
 **Goal:** Extend `/transcribe` to accept PDF, TXT, and Word files. Extract text, truncate to 10,000 chars, then summarize via LLM into a search query.
 
-**Spec:** `capstone/docs/specs/2026-03-17-document-upload-design.md`
+**Spec:** `docs/specs/2026-03-17-document-upload-design.md`
 
-All file paths relative to `capstone/`.
+All file paths relative to the repository root.
 
 ---
 

@@ -19,8 +19,8 @@
 ### Task 1: Vector Search
 
 **Files:**
-- Create: `capstone/backend/src/retrieval/search.py`
-- Create: `capstone/backend/tests/unit/test_search.py`
+- Create: `backend/src/retrieval/search.py`
+- Create: `backend/tests/unit/test_search.py`
 
 - [ ] **Step 1: Write failing tests for search**
 
@@ -95,7 +95,7 @@ def test_parse_search_results():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_search.py -v
 ```
 
@@ -218,7 +218,7 @@ def search(
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_search.py -v
 ```
 
@@ -227,7 +227,7 @@ Expected: All 6 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/retrieval/search.py capstone/backend/tests/unit/test_search.py
+git add backend/src/retrieval/search.py backend/tests/unit/test_search.py
 git commit -m "feat(retrieval): add Milvus vector search with metadata filtering"
 ```
 
@@ -236,8 +236,8 @@ git commit -m "feat(retrieval): add Milvus vector search with metadata filtering
 ### Task 2: MeSH Query Expansion
 
 **Files:**
-- Create: `capstone/backend/src/retrieval/query_expander.py`
-- Create: `capstone/backend/tests/unit/test_query_expander.py`
+- Create: `backend/src/retrieval/query_expander.py`
+- Create: `backend/tests/unit/test_query_expander.py`
 
 - [ ] **Step 1: Write failing tests for query expander**
 
@@ -316,7 +316,7 @@ def test_expand_query_format(mesh_db):
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_query_expander.py -v
 ```
 
@@ -442,7 +442,7 @@ class QueryExpander:
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_query_expander.py -v
 ```
 
@@ -451,7 +451,7 @@ Expected: All 3 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/retrieval/query_expander.py capstone/backend/tests/unit/test_query_expander.py
+git add backend/src/retrieval/query_expander.py backend/tests/unit/test_query_expander.py
 git commit -m "feat(retrieval): add MeSH-based query expansion (LLM + DuckDB)"
 ```
 
@@ -460,8 +460,8 @@ git commit -m "feat(retrieval): add MeSH-based query expansion (LLM + DuckDB)"
 ### Task 3: Retrieval Public Interface + Reranker Stub
 
 **Files:**
-- Create: `capstone/backend/src/retrieval/reranker.py`
-- Modify: `capstone/backend/src/retrieval/__init__.py`
+- Create: `backend/src/retrieval/reranker.py`
+- Modify: `backend/src/retrieval/__init__.py`
 
 - [ ] **Step 1: Create reranker stub**
 
@@ -492,7 +492,7 @@ __all__ = ["QueryExpander", "search"]
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/backend/src/retrieval/
+git add backend/src/retrieval/
 git commit -m "feat(retrieval): add reranker stub and public interface"
 ```
 
@@ -503,8 +503,8 @@ git commit -m "feat(retrieval): add reranker stub and public interface"
 ### Task 4: Prompt Templates
 
 **Files:**
-- Create: `capstone/backend/src/rag/prompts.py`
-- Create: `capstone/backend/tests/unit/test_prompts.py`
+- Create: `backend/src/rag/prompts.py`
+- Create: `backend/tests/unit/test_prompts.py`
 
 - [ ] **Step 1: Write failing tests for prompts**
 
@@ -550,7 +550,7 @@ def test_user_prompt_empty_results():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_prompts.py -v
 ```
 
@@ -607,7 +607,7 @@ Based on the abstracts above, provide a comprehensive answer to the question. Ci
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_prompts.py -v
 ```
 
@@ -616,7 +616,7 @@ Expected: All 3 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/rag/prompts.py capstone/backend/tests/unit/test_prompts.py
+git add backend/src/rag/prompts.py backend/tests/unit/test_prompts.py
 git commit -m "feat(rag): add prompt templates with citation instructions"
 ```
 
@@ -625,9 +625,9 @@ git commit -m "feat(rag): add prompt templates with citation instructions"
 ### Task 5: RAG Chain
 
 **Files:**
-- Create: `capstone/backend/src/rag/chain.py`
-- Modify: `capstone/backend/src/rag/__init__.py`
-- Create: `capstone/backend/tests/unit/test_chain.py`
+- Create: `backend/src/rag/chain.py`
+- Modify: `backend/src/rag/__init__.py`
+- Create: `backend/tests/unit/test_chain.py`
 
 - [ ] **Step 1: Write failing tests for RAG chain**
 
@@ -700,7 +700,7 @@ def test_ask_with_no_results(mock_expander_cls, mock_search):
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_chain.py -v
 ```
 
@@ -796,7 +796,7 @@ __all__ = ["ask"]
 - [ ] **Step 5: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_chain.py -v
 ```
 
@@ -805,7 +805,7 @@ Expected: All 2 tests PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/src/rag/ capstone/backend/tests/unit/test_chain.py
+git add backend/src/rag/ backend/tests/unit/test_chain.py
 git commit -m "feat(rag): add RAG chain (retrieve → expand → prompt → LLM → response)"
 ```
 
@@ -816,7 +816,7 @@ git commit -m "feat(rag): add RAG chain (retrieve → expand → prompt → LLM 
 ### Task 6: CLI Entry Point
 
 **Files:**
-- Create: `capstone/backend/src/cli.py`
+- Create: `backend/src/cli.py`
 
 - [ ] **Step 1: Implement CLI**
 
@@ -915,7 +915,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/backend/src/cli.py
+git add backend/src/cli.py
 git commit -m "feat: add CLI entry point for PubMed RAG"
 ```
 
@@ -928,7 +928,7 @@ git commit -m "feat: add CLI entry point for PubMed RAG"
 - [ ] **Step 1: Ingest sample data**
 
 ```bash
-cd capstone/backend
+cd backend
 # Assuming sampled.jsonl exists from playground pipeline
 uv run python -c "
 from pymilvus import connections
@@ -948,7 +948,7 @@ Expected: IngestReport showing articles loaded and upserted.
 - [ ] **Step 2: Run E2E query via CLI**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run python -m src.cli "What are the recent advances in breast cancer immunotherapy?" --top-k 5 --year-min 2023
 ```
 
@@ -957,7 +957,7 @@ Expected: A coherent answer citing specific PMIDs, with relevant abstracts.
 - [ ] **Step 3: Run E2E query with JSON output**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run python -m src.cli "treatment options for knee osteoarthritis" --top-k 3 --json
 ```
 
@@ -966,7 +966,7 @@ Expected: JSON output with `answer`, `citations`, and `query` fields.
 - [ ] **Step 4: Run E2E with metadata filter**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run python -m src.cli "cardiovascular risk factors" --year-min 2022 --year-max 2024 --top-k 5
 ```
 
@@ -975,7 +975,7 @@ Expected: Results filtered to 2022-2024 only.
 - [ ] **Step 5: Run full test suite**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/ -v --tb=short
 ```
 

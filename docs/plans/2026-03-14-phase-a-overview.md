@@ -4,7 +4,7 @@
 
 **Goal:** Build a working CLI that takes a natural language query and returns a cited answer from PubMed abstracts.
 
-**Architecture:** Modular monolith in `capstone/backend/src/` with 5 modules (shared, ingestion, retrieval, rag, guardrails). Modules communicate via Pydantic models in `shared/models.py`. Milvus 2.5+ for vector storage, LiteLLM for LLM abstraction, DuckDB for MeSH lookups.
+**Architecture:** Modular monolith in `backend/src/` with 5 modules (shared, ingestion, retrieval, rag, guardrails). Modules communicate via Pydantic models in `shared/models.py`. Milvus 2.5+ for vector storage, LiteLLM for LLM abstraction, DuckDB for MeSH lookups.
 
 **Tech Stack:** Python 3.11+, uv, Milvus 2.5+ (Docker), text-embedding-3-small, LiteLLM (GPT-4o-mini default), DuckDB, Pydantic v2, pytest
 

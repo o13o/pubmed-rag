@@ -19,7 +19,7 @@
 ### Task 1: Add FastAPI/uvicorn dependencies
 
 **Files:**
-- Modify: `capstone/backend/pyproject.toml`
+- Modify: `backend/pyproject.toml`
 
 - [ ] **Step 1: Add fastapi and uvicorn to dependencies**
 
@@ -33,7 +33,7 @@ Add to the `dependencies` list in `pyproject.toml`:
 - [ ] **Step 2: Sync dependencies**
 
 ```bash
-cd capstone/backend
+cd backend
 uv sync
 ```
 
@@ -42,7 +42,7 @@ Expected: fastapi and uvicorn installed.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/backend/pyproject.toml capstone/backend/uv.lock
+git add backend/pyproject.toml backend/uv.lock
 git commit -m "deps: add fastapi and uvicorn"
 ```
 
@@ -51,11 +51,11 @@ git commit -m "deps: add fastapi and uvicorn"
 ### Task 2: Lifespan + App Factory
 
 **Files:**
-- Create: `capstone/backend/src/api/main.py`
+- Create: `backend/src/api/main.py`
 
 - [ ] **Step 1: Write failing test for app creation**
 
-Create: `capstone/backend/tests/unit/test_api_health.py`
+Create: `backend/tests/unit/test_api_health.py`
 
 ```python
 # tests/unit/test_api_health.py
@@ -183,7 +183,7 @@ app = create_app()
 
 - [ ] **Step 3: Create dependencies module**
 
-Create: `capstone/backend/src/api/dependencies.py`
+Create: `backend/src/api/dependencies.py`
 
 ```python
 # src/api/dependencies.py
@@ -220,7 +220,7 @@ def get_app_settings(request: Request) -> Settings:
 
 - [ ] **Step 4: Create routes `__init__.py`**
 
-Create: `capstone/backend/src/api/routes/__init__.py`
+Create: `backend/src/api/routes/__init__.py`
 
 ```python
 # Empty — routes are imported by main.py
@@ -229,7 +229,7 @@ Create: `capstone/backend/src/api/routes/__init__.py`
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_api_health.py -v
 ```
 
@@ -238,7 +238,7 @@ Expected: FAIL (routes not yet implemented).
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/src/api/
+git add backend/src/api/
 git commit -m "feat(api): add FastAPI app factory with lifespan and CORS"
 ```
 
@@ -249,7 +249,7 @@ git commit -m "feat(api): add FastAPI app factory with lifespan and CORS"
 ### Task 3: GET /health
 
 **Files:**
-- Create: `capstone/backend/src/api/routes/health.py`
+- Create: `backend/src/api/routes/health.py`
 
 - [ ] **Step 1: Implement health endpoint**
 
@@ -282,7 +282,7 @@ def health_check(collection: Collection = Depends(get_collection)):
 - [ ] **Step 2: Run health test**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_api_health.py::test_health_returns_ok -v
 ```
 
@@ -291,7 +291,7 @@ Expected: PASS.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/backend/src/api/routes/health.py
+git add backend/src/api/routes/health.py
 git commit -m "feat(api): add GET /health endpoint"
 ```
 
@@ -300,8 +300,8 @@ git commit -m "feat(api): add GET /health endpoint"
 ### Task 4: POST /search
 
 **Files:**
-- Create: `capstone/backend/src/api/routes/search.py`
-- Create: `capstone/backend/tests/unit/test_api_search.py`
+- Create: `backend/src/api/routes/search.py`
+- Create: `backend/tests/unit/test_api_search.py`
 
 - [ ] **Step 1: Write failing tests**
 
@@ -403,7 +403,7 @@ def search_endpoint(
 - [ ] **Step 3: Run tests**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_api_search.py -v
 ```
 
@@ -412,7 +412,7 @@ Expected: All PASS.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add capstone/backend/src/api/routes/search.py capstone/backend/tests/unit/test_api_search.py
+git add backend/src/api/routes/search.py backend/tests/unit/test_api_search.py
 git commit -m "feat(api): add POST /search endpoint"
 ```
 
@@ -421,8 +421,8 @@ git commit -m "feat(api): add POST /search endpoint"
 ### Task 5: POST /ask
 
 **Files:**
-- Create: `capstone/backend/src/api/routes/ask.py`
-- Create: `capstone/backend/tests/unit/test_api_ask.py`
+- Create: `backend/src/api/routes/ask.py`
+- Create: `backend/tests/unit/test_api_ask.py`
 
 - [ ] **Step 1: Write failing tests**
 
@@ -546,7 +546,7 @@ def ask_endpoint(
 - [ ] **Step 3: Run tests**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_api_ask.py -v
 ```
 
@@ -555,7 +555,7 @@ Expected: All PASS.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add capstone/backend/src/api/routes/ask.py capstone/backend/tests/unit/test_api_ask.py
+git add backend/src/api/routes/ask.py backend/tests/unit/test_api_ask.py
 git commit -m "feat(api): add POST /ask RAG endpoint"
 ```
 
@@ -564,7 +564,7 @@ git commit -m "feat(api): add POST /ask RAG endpoint"
 ### Task 6: Update api `__init__.py` + Full test suite
 
 **Files:**
-- Modify: `capstone/backend/src/api/__init__.py`
+- Modify: `backend/src/api/__init__.py`
 
 - [ ] **Step 1: Update `__init__.py`**
 
@@ -580,7 +580,7 @@ __all__ = ["app", "create_app"]
 - [ ] **Step 2: Run full test suite**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_api_health.py tests/unit/test_api_search.py tests/unit/test_api_ask.py -v
 ```
 
@@ -589,7 +589,7 @@ Expected: All tests PASS.
 - [ ] **Step 3: Manual E2E test (requires Milvus running + data ingested)**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run uvicorn src.api.main:app --reload --port 8000
 ```
 
@@ -613,6 +613,6 @@ curl -X POST http://localhost:8000/ask \
 - [ ] **Step 4: Commit**
 
 ```bash
-git add capstone/backend/src/api/
+git add backend/src/api/
 git commit -m "feat(api): complete FastAPI endpoints (health, search, ask)"
 ```

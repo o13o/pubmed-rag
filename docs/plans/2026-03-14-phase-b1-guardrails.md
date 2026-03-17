@@ -19,8 +19,8 @@
 ### Task 1: Output Guardrails — LLM Validator + MeSH Validator + Disclaimer
 
 **Files:**
-- Create: `capstone/backend/src/guardrails/output.py`
-- Create: `capstone/backend/tests/unit/test_guardrails_output.py`
+- Create: `backend/src/guardrails/output.py`
+- Create: `backend/tests/unit/test_guardrails_output.py`
 
 - [ ] **Step 1: Write failing tests**
 
@@ -173,7 +173,7 @@ def test_validate_malformed_llm_response(mock_llm, mesh_db, rag_response, search
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_guardrails_output.py -v
 ```
 
@@ -321,7 +321,7 @@ Check the answer against the source abstracts and return a JSON array of issues.
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_guardrails_output.py -v
 ```
 
@@ -330,7 +330,7 @@ Expected: All 7 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/guardrails/output.py capstone/backend/tests/unit/test_guardrails_output.py
+git add backend/src/guardrails/output.py backend/tests/unit/test_guardrails_output.py
 git commit -m "feat(guardrails): add output validation (LLM + MeSH + disclaimer)"
 ```
 
@@ -339,8 +339,8 @@ git commit -m "feat(guardrails): add output validation (LLM + MeSH + disclaimer)
 ### Task 2: Input Guardrail (Lightweight)
 
 **Files:**
-- Create: `capstone/backend/src/guardrails/input.py`
-- Create: `capstone/backend/tests/unit/test_guardrails_input.py`
+- Create: `backend/src/guardrails/input.py`
+- Create: `backend/tests/unit/test_guardrails_input.py`
 
 - [ ] **Step 1: Write failing tests**
 
@@ -379,7 +379,7 @@ def test_malformed_llm_response_defaults_relevant():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_guardrails_input.py -v
 ```
 
@@ -433,7 +433,7 @@ def classify_medical_relevance(query: str, llm: LLMClient) -> RelevanceResult:
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_guardrails_input.py -v
 ```
 
@@ -442,7 +442,7 @@ Expected: All 3 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/guardrails/input.py capstone/backend/tests/unit/test_guardrails_input.py
+git add backend/src/guardrails/input.py backend/tests/unit/test_guardrails_input.py
 git commit -m "feat(guardrails): add lightweight input medical topic classifier"
 ```
 
@@ -451,7 +451,7 @@ git commit -m "feat(guardrails): add lightweight input medical topic classifier"
 ### Task 3: Guardrails Public Interface
 
 **Files:**
-- Modify: `capstone/backend/src/guardrails/__init__.py`
+- Modify: `backend/src/guardrails/__init__.py`
 
 - [ ] **Step 1: Update `__init__.py`**
 
@@ -468,6 +468,6 @@ __all__ = ["GuardrailValidator", "MEDICAL_DISCLAIMER", "classify_medical_relevan
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/backend/src/guardrails/__init__.py
+git add backend/src/guardrails/__init__.py
 git commit -m "feat(guardrails): add public interface"
 ```

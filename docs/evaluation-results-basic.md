@@ -76,7 +76,7 @@ The `/ask` latency includes: query expansion → hybrid search → cross-encoder
 ## Reproduction
 
 ```bash
-cd capstone/backend
+cd backend
 
 # Requires: Milvus running, data ingested, API server running, OPENAI_API_KEY set
 .venv/bin/python scripts/run_evaluation.py > data/eval_results.json

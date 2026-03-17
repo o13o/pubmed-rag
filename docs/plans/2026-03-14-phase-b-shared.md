@@ -17,8 +17,8 @@
 ### Task 1: Add Phase B Models
 
 **Files:**
-- Modify: `capstone/backend/src/shared/models.py`
-- Modify: `capstone/backend/tests/unit/test_models.py`
+- Modify: `backend/src/shared/models.py`
+- Modify: `backend/tests/unit/test_models.py`
 
 - [ ] **Step 1: Write failing tests for new models**
 
@@ -83,7 +83,7 @@ def test_search_filters_search_mode_default():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_models.py -v
 ```
 
@@ -126,7 +126,7 @@ class SearchFilters(BaseModel):
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_models.py -v
 ```
 
@@ -135,7 +135,7 @@ Expected: All tests PASS (original 8 + 6 new = 14 total).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/shared/models.py capstone/backend/tests/unit/test_models.py
+git add backend/src/shared/models.py backend/tests/unit/test_models.py
 git commit -m "feat(shared): add GuardrailWarning, ValidatedResponse models and search_mode filter"
 ```
 
@@ -144,8 +144,8 @@ git commit -m "feat(shared): add GuardrailWarning, ValidatedResponse models and 
 ### Task 2: Add Phase B Config Settings
 
 **Files:**
-- Modify: `capstone/backend/src/shared/config.py`
-- Modify: `capstone/backend/tests/unit/test_config.py`
+- Modify: `backend/src/shared/config.py`
+- Modify: `backend/tests/unit/test_config.py`
 
 - [ ] **Step 1: Write failing tests for new settings**
 
@@ -165,7 +165,7 @@ def test_phase_b_settings_defaults(mock_env):
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_config.py -v
 ```
 
@@ -191,7 +191,7 @@ Add to the `Settings` class:
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_config.py -v
 ```
 
@@ -200,7 +200,7 @@ Expected: All tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/shared/config.py capstone/backend/tests/unit/test_config.py
+git add backend/src/shared/config.py backend/tests/unit/test_config.py
 git commit -m "feat(shared): add Phase B config settings (search_mode, reranker, guardrails)"
 ```
 
@@ -209,7 +209,7 @@ git commit -m "feat(shared): add Phase B config settings (search_mode, reranker,
 ### Task 3: Update pyproject.toml Dependencies
 
 **Files:**
-- Modify: `capstone/backend/pyproject.toml`
+- Modify: `backend/pyproject.toml`
 
 - [ ] **Step 1: Add sentence-transformers to main dependencies and deepeval to eval group**
 
@@ -238,7 +238,7 @@ eval = [
 - [ ] **Step 2: Sync dependencies**
 
 ```bash
-cd capstone/backend
+cd backend
 uv sync
 ```
 
@@ -247,7 +247,7 @@ Expected: `sentence-transformers` installed. (Note: `deepeval` is in the `eval` 
 - [ ] **Step 3: Verify import works**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run python -c "from sentence_transformers import CrossEncoder; print('OK')"
 ```
 
@@ -256,7 +256,7 @@ Expected: `OK`
 - [ ] **Step 4: Run full test suite to verify no regressions**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/ -v
 ```
 
@@ -265,6 +265,6 @@ Expected: All tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/pyproject.toml capstone/backend/uv.lock
+git add backend/pyproject.toml backend/uv.lock
 git commit -m "deps: add sentence-transformers and deepeval (eval group)"
 ```

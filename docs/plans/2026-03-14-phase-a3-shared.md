@@ -17,8 +17,8 @@
 ### Task 1: Pydantic Models
 
 **Files:**
-- Create: `capstone/backend/src/shared/models.py`
-- Create: `capstone/backend/tests/unit/test_models.py`
+- Create: `backend/src/shared/models.py`
+- Create: `backend/tests/unit/test_models.py`
 
 - [ ] **Step 1: Write failing tests for models**
 
@@ -129,7 +129,7 @@ def test_ingest_report():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_models.py -v
 ```
 
@@ -234,7 +234,7 @@ class IngestReport(BaseModel):
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_models.py -v
 ```
 
@@ -243,7 +243,7 @@ Expected: All 8 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/shared/models.py capstone/backend/tests/unit/test_models.py
+git add backend/src/shared/models.py backend/tests/unit/test_models.py
 git commit -m "feat(shared): add Pydantic models for inter-module contracts"
 ```
 
@@ -252,8 +252,8 @@ git commit -m "feat(shared): add Pydantic models for inter-module contracts"
 ### Task 2: Configuration Management
 
 **Files:**
-- Create: `capstone/backend/src/shared/config.py`
-- Create: `capstone/backend/tests/unit/test_config.py`
+- Create: `backend/src/shared/config.py`
+- Create: `backend/tests/unit/test_config.py`
 
 - [ ] **Step 1: Write failing tests for config**
 
@@ -298,7 +298,7 @@ def test_settings_from_env():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_config.py -v
 ```
 
@@ -352,7 +352,7 @@ def get_settings() -> Settings:
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_config.py -v
 ```
 
@@ -361,7 +361,7 @@ Expected: All 2 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/shared/config.py capstone/backend/tests/unit/test_config.py
+git add backend/src/shared/config.py backend/tests/unit/test_config.py
 git commit -m "feat(shared): add pydantic-settings configuration management"
 ```
 
@@ -372,8 +372,8 @@ git commit -m "feat(shared): add pydantic-settings configuration management"
 ### Task 3: LiteLLM Wrapper
 
 **Files:**
-- Create: `capstone/backend/src/shared/llm.py`
-- Create: `capstone/backend/tests/unit/test_llm.py`
+- Create: `backend/src/shared/llm.py`
+- Create: `backend/tests/unit/test_llm.py`
 
 - [ ] **Step 1: Write failing tests for LLM wrapper**
 
@@ -428,7 +428,7 @@ def test_llm_client_default_model():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_llm.py -v
 ```
 
@@ -490,7 +490,7 @@ class LLMClient:
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_llm.py -v
 ```
 
@@ -499,7 +499,7 @@ Expected: All 3 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/shared/llm.py capstone/backend/tests/unit/test_llm.py
+git add backend/src/shared/llm.py backend/tests/unit/test_llm.py
 git commit -m "feat(shared): add LiteLLM wrapper for model-agnostic LLM calls"
 ```
 
@@ -510,9 +510,9 @@ git commit -m "feat(shared): add LiteLLM wrapper for model-agnostic LLM calls"
 ### Task 4: MeSH XML Parser and DuckDB Loader
 
 **Files:**
-- Create: `capstone/backend/src/shared/mesh_db.py`
-- Create: `capstone/backend/tests/unit/test_mesh_db.py`
-- Create: `capstone/backend/scripts/build_mesh_db.py`
+- Create: `backend/src/shared/mesh_db.py`
+- Create: `backend/tests/unit/test_mesh_db.py`
+- Create: `backend/scripts/build_mesh_db.py`
 
 The MeSH XML (`desc2025.xml`) has this structure per descriptor:
 ```xml
@@ -628,7 +628,7 @@ def test_validate_term_not_exists(mesh_db):
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_mesh_db.py -v
 ```
 
@@ -745,7 +745,7 @@ class MeSHDatabase:
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_mesh_db.py -v
 ```
 
@@ -754,7 +754,7 @@ Expected: All 8 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/shared/mesh_db.py capstone/backend/tests/unit/test_mesh_db.py
+git add backend/src/shared/mesh_db.py backend/tests/unit/test_mesh_db.py
 git commit -m "feat(shared): add DuckDB-backed MeSH lookup (hierarchy, synonyms, validation)"
 ```
 
@@ -763,7 +763,7 @@ git commit -m "feat(shared): add DuckDB-backed MeSH lookup (hierarchy, synonyms,
 ### Task 5: MeSH XML → DuckDB Build Script
 
 **Files:**
-- Create: `capstone/backend/scripts/build_mesh_db.py`
+- Create: `backend/scripts/build_mesh_db.py`
 
 - [ ] **Step 1: Write the build script**
 
@@ -887,7 +887,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/backend/scripts/build_mesh_db.py
+git add backend/scripts/build_mesh_db.py
 git commit -m "feat(mesh): add MeSH XML → DuckDB build script"
 ```
 
@@ -896,7 +896,7 @@ git commit -m "feat(mesh): add MeSH XML → DuckDB build script"
 ### Task 6: Shared conftest.py
 
 **Files:**
-- Create: `capstone/backend/tests/conftest.py`
+- Create: `backend/tests/conftest.py`
 
 - [ ] **Step 1: Create conftest with shared fixtures**
 
@@ -950,7 +950,7 @@ def mock_env(monkeypatch):
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/backend/tests/conftest.py
+git add backend/tests/conftest.py
 git commit -m "test: add shared conftest.py with MeSH and env fixtures"
 ```
 
@@ -959,7 +959,7 @@ git commit -m "test: add shared conftest.py with MeSH and env fixtures"
 ### Task 7: Update shared `__init__.py`
 
 **Files:**
-- Modify: `capstone/backend/src/shared/__init__.py`
+- Modify: `backend/src/shared/__init__.py`
 
 - [ ] **Step 1: Define public interface**
 
@@ -998,7 +998,7 @@ __all__ = [
 - [ ] **Step 2: Run all shared module tests**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_models.py tests/unit/test_config.py tests/unit/test_llm.py tests/unit/test_mesh_db.py -v
 ```
 
@@ -1007,6 +1007,6 @@ Expected: All tests PASS (21 total).
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/backend/src/shared/__init__.py
+git add backend/src/shared/__init__.py
 git commit -m "feat(shared): define public interface in __init__.py"
 ```

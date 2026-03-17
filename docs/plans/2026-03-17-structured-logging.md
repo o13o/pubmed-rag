@@ -36,7 +36,7 @@ Add `python-json-logger>=3.0` to the `dependencies` list in `pyproject.toml`.
 
 - [ ] **Step 2: Install**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv sync`
+Run: `cd backend && uv sync`
 
 - [ ] **Step 3: Commit**
 
@@ -112,7 +112,7 @@ def test_setup_logging_suppresses_noisy_loggers(capfd):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv run pytest tests/unit/test_logging_config.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_logging_config.py -v`
 Expected: FAIL (ImportError — module does not exist)
 
 - [ ] **Step 3: Write minimal implementation**
@@ -166,7 +166,7 @@ def setup_logging(level: str = "INFO") -> None:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv run pytest tests/unit/test_logging_config.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_logging_config.py -v`
 Expected: 4 passed
 
 - [ ] **Step 5: Commit**
@@ -189,7 +189,7 @@ In `src/api/main.py`, add `from src.shared.logging_config import setup_logging` 
 
 - [ ] **Step 2: Run existing API tests to confirm no breakage**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv run pytest tests/unit/test_api_health.py tests/unit/test_api_ask.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_api_health.py tests/unit/test_api_ask.py -v`
 Expected: All pass
 
 - [ ] **Step 3: Commit**
@@ -214,7 +214,7 @@ Replace all `print(...)` calls with `sys.stdout.write(... + "\n")`. Keep the exa
 
 - [ ] **Step 2: Run full unit test suite to confirm no breakage**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv run pytest tests/unit/ -q`
+Run: `cd backend && uv run pytest tests/unit/ -q`
 Expected: 134 passed
 
 - [ ] **Step 3: Commit**
@@ -246,7 +246,7 @@ logger.info("Collection '%s' ready. Fields: %s", col.name, [f.name for f in col.
 
 - [ ] **Step 2: Run tests**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv run pytest tests/unit/ -q`
+Run: `cd backend && uv run pytest tests/unit/ -q`
 Expected: 134 passed
 
 - [ ] **Step 3: Commit**
@@ -283,7 +283,7 @@ Same pattern: replace `logging.basicConfig(...)` with `setup_logging()`, replace
 
 - [ ] **Step 3: Run tests**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv run pytest tests/unit/ -q`
+Run: `cd backend && uv run pytest tests/unit/ -q`
 Expected: 134 passed
 
 - [ ] **Step 4: Commit**
@@ -304,7 +304,7 @@ Expected: Zero matches
 
 - [ ] **Step 2: Run full test suite**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && uv run pytest tests/unit/ -v`
+Run: `cd backend && uv run pytest tests/unit/ -v`
 Expected: All 134+ tests pass
 
 - [ ] **Step 3: Final commit (if any fixups needed)**

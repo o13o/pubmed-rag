@@ -104,7 +104,7 @@ def test_methodology_critic_handles_invalid_json():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_methodology.py::test_methodology_critic_returns_agent_result -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_methodology.py::test_methodology_critic_returns_agent_result -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'src.agents.methodology_critic'`
 
 - [ ] **Step 3: Implement MethodologyCriticAgent**
@@ -182,7 +182,7 @@ class MethodologyCriticAgent:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_methodology.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_methodology.py -v`
 Expected: ALL 3 PASS
 
 - [ ] **Step 5: Commit**
@@ -278,7 +278,7 @@ def test_clinical_applicability_handles_failure():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_clinical.py::test_clinical_applicability_returns_agent_result -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_clinical.py::test_clinical_applicability_returns_agent_result -v`
 Expected: FAIL — `ModuleNotFoundError`
 
 - [ ] **Step 3: Implement ClinicalApplicabilityAgent**
@@ -356,7 +356,7 @@ class ClinicalApplicabilityAgent:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_clinical.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_clinical.py -v`
 Expected: ALL 3 PASS
 
 - [ ] **Step 5: Commit**
@@ -456,7 +456,7 @@ def test_summarization_handles_failure():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_summarization.py::test_summarization_returns_agent_result -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_summarization.py::test_summarization_returns_agent_result -v`
 Expected: FAIL — `ModuleNotFoundError`
 
 - [ ] **Step 3: Implement SummarizationAgent**
@@ -533,7 +533,7 @@ class SummarizationAgent:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_summarization.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_summarization.py -v`
 Expected: ALL 3 PASS
 
 - [ ] **Step 5: Commit**

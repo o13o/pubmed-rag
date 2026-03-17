@@ -125,7 +125,7 @@ def test_analyze_requires_results(client):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_api_analyze.py::test_analyze_returns_agent_results -v`
+Run: `cd backend && uv run pytest tests/unit/test_api_analyze.py::test_analyze_returns_agent_results -v`
 Expected: FAIL — 404 (route not registered)
 
 - [ ] **Step 3: Implement /analyze endpoint**
@@ -183,7 +183,7 @@ And in `create_app()`, add after the search router line:
 
 - [ ] **Step 5: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_api_analyze.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_api_analyze.py -v`
 Expected: ALL 4 PASS
 
 - [ ] **Step 6: Commit**
@@ -283,7 +283,7 @@ def test_metric_with_no_context():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_eval_metrics.py::test_methodology_quality_metric -v`
+Run: `cd backend && uv run pytest tests/unit/test_eval_metrics.py::test_methodology_quality_metric -v`
 Expected: FAIL — `ImportError: cannot import name 'MethodologyQualityMetric'`
 
 - [ ] **Step 3: Add agent-based metrics to custom.py**
@@ -399,7 +399,7 @@ class ClinicalRelevanceMetric(BaseMetric):
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_eval_metrics.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_eval_metrics.py -v`
 Expected: ALL 3 PASS
 
 - [ ] **Step 5: Commit**
@@ -415,12 +415,12 @@ git commit -m "feat(eval): add agent-based DeepEval metrics with tests"
 
 - [ ] **Step 1: Run all backend tests**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/ -v`
+Run: `cd backend && uv run pytest tests/unit/ -v`
 Expected: ALL PASS
 
 - [ ] **Step 2: Run frontend build**
 
-Run: `cd capstone/frontend && npm run build`
+Run: `cd frontend && npm run build`
 Expected: `dist/` directory created, no errors
 
 - [ ] **Step 3: Commit if any cleanup needed**

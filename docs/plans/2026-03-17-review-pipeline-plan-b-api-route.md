@@ -17,13 +17,13 @@
 ### Task 1: Create `/review` route and register it
 
 **Files:**
-- Create: `capstone/backend/src/api/routes/review.py`
-- Modify: `capstone/backend/src/api/main.py`
-- Test: `capstone/backend/tests/unit/test_api_review.py`
+- Create: `backend/src/api/routes/review.py`
+- Modify: `backend/src/api/main.py`
+- Test: `backend/tests/unit/test_api_review.py`
 
 - [ ] **Step 1: Write the tests**
 
-Create `capstone/backend/tests/unit/test_api_review.py`:
+Create `backend/tests/unit/test_api_review.py`:
 
 ```python
 """Tests for POST /review endpoint."""
@@ -137,12 +137,12 @@ def test_review_synthesizer_error_returns_502(mock_pipeline_cls, client):
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_api_review.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_api_review.py -v`
 Expected: FAIL — module `src.api.routes.review` not found
 
 - [ ] **Step 3: Create the route file**
 
-Create `capstone/backend/src/api/routes/review.py`:
+Create `backend/src/api/routes/review.py`:
 
 ```python
 """POST /review — literature review pipeline endpoint."""
@@ -198,7 +198,7 @@ def review_endpoint(
 
 - [ ] **Step 4: Register the router in main.py**
 
-Add to `capstone/backend/src/api/main.py`:
+Add to `backend/src/api/main.py`:
 
 In the imports section (line 10), add `review` to the import:
 ```python
@@ -212,17 +212,17 @@ After line 81 (`app.include_router(transcribe.router)`), add:
 
 - [ ] **Step 5: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_api_review.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_api_review.py -v`
 Expected: 5 PASS
 
 - [ ] **Step 6: Run all unit tests to check for regressions**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/ -v`
+Run: `cd backend && uv run pytest tests/unit/ -v`
 Expected: All existing tests still pass
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add capstone/backend/src/api/routes/review.py capstone/backend/src/api/main.py capstone/backend/tests/unit/test_api_review.py
+git add backend/src/api/routes/review.py backend/src/api/main.py backend/tests/unit/test_api_review.py
 git commit -m "feat: add POST /review endpoint for literature review pipeline"
 ```

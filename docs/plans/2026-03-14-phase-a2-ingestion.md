@@ -19,8 +19,8 @@
 ### Task 1: JSONL Loader
 
 **Files:**
-- Create: `capstone/backend/src/ingestion/loader.py`
-- Create: `capstone/backend/tests/unit/test_loader.py`
+- Create: `backend/src/ingestion/loader.py`
+- Create: `backend/tests/unit/test_loader.py`
 
 **JSONL input format** (from playground pipeline `sampled.jsonl`):
 ```json
@@ -111,7 +111,7 @@ def test_load_extracts_year_from_publication_date():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_loader.py -v
 ```
 
@@ -195,7 +195,7 @@ class Article(BaseModel):
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_loader.py -v
 ```
 
@@ -204,7 +204,7 @@ Expected: All 3 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/ingestion/loader.py capstone/backend/tests/unit/test_loader.py
+git add backend/src/ingestion/loader.py backend/tests/unit/test_loader.py
 git commit -m "feat(ingestion): add JSONL loader with Article model parsing"
 ```
 
@@ -213,8 +213,8 @@ git commit -m "feat(ingestion): add JSONL loader with Article model parsing"
 ### Task 2: Chunker
 
 **Files:**
-- Create: `capstone/backend/src/ingestion/chunker.py`
-- Create: `capstone/backend/tests/unit/test_chunker.py`
+- Create: `backend/src/ingestion/chunker.py`
+- Create: `backend/tests/unit/test_chunker.py`
 
 Per ADR-0001: 1 abstract = 1 chunk. Format: `"Title: {title}\nAbstract: {abstract}\nMeSH: {term1}; {term2}; ..."`
 
@@ -274,7 +274,7 @@ def test_chunk_carries_article_reference():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_chunker.py -v
 ```
 
@@ -337,7 +337,7 @@ class Chunk(BaseModel):
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_chunker.py -v
 ```
 
@@ -346,7 +346,7 @@ Expected: All 4 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/ingestion/chunker.py capstone/backend/tests/unit/test_chunker.py
+git add backend/src/ingestion/chunker.py backend/tests/unit/test_chunker.py
 git commit -m "feat(ingestion): add chunker (1 abstract = 1 chunk per ADR-0001)"
 ```
 
@@ -357,9 +357,9 @@ git commit -m "feat(ingestion): add chunker (1 abstract = 1 chunk per ADR-0001)"
 ### Task 3: Embedder (OpenAI + Milvus Upsert)
 
 **Files:**
-- Create: `capstone/backend/src/ingestion/embedder.py`
-- Create: `capstone/backend/tests/unit/test_embedder.py`
-- Create: `capstone/backend/tests/integration/test_embedder_milvus.py`
+- Create: `backend/src/ingestion/embedder.py`
+- Create: `backend/tests/unit/test_embedder.py`
+- Create: `backend/tests/integration/test_embedder_milvus.py`
 
 - [ ] **Step 1: Write unit tests for embedder (with mocked OpenAI)**
 
@@ -413,7 +413,7 @@ def test_generate_embeddings_batches_large_input():
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_embedder.py -v
 ```
 
@@ -511,7 +511,7 @@ def upsert_chunks(
 - [ ] **Step 4: Run unit tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_embedder.py -v
 ```
 
@@ -520,7 +520,7 @@ Expected: All 2 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/ingestion/embedder.py capstone/backend/tests/unit/test_embedder.py
+git add backend/src/ingestion/embedder.py backend/tests/unit/test_embedder.py
 git commit -m "feat(ingestion): add embedder with batching and retry"
 ```
 
@@ -529,9 +529,9 @@ git commit -m "feat(ingestion): add embedder with batching and retry"
 ### Task 4: Ingestion Orchestrator
 
 **Files:**
-- Create: `capstone/backend/src/ingestion/pipeline.py`
-- Modify: `capstone/backend/src/ingestion/__init__.py`
-- Create: `capstone/backend/tests/unit/test_pipeline.py`
+- Create: `backend/src/ingestion/pipeline.py`
+- Modify: `backend/src/ingestion/__init__.py`
+- Create: `backend/tests/unit/test_pipeline.py`
 
 - [ ] **Step 1: Write test for pipeline orchestration**
 
@@ -588,7 +588,7 @@ def test_ingest_loads_chunks_and_upserts(mock_embed, mock_upsert):
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_pipeline.py -v
 ```
 
@@ -669,7 +669,7 @@ __all__ = ["ingest"]
 - [ ] **Step 5: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_pipeline.py tests/unit/test_loader.py tests/unit/test_chunker.py -v
 ```
 
@@ -678,6 +678,6 @@ Expected: All tests PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/src/ingestion/ capstone/backend/tests/unit/test_pipeline.py
+git add backend/src/ingestion/ backend/tests/unit/test_pipeline.py
 git commit -m "feat(ingestion): add pipeline orchestrator (load → chunk → embed → upsert)"
 ```

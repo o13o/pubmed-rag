@@ -49,7 +49,7 @@ Remove the duplicate citations list-building that currently exists after step 5 
 
 - [ ] **Step 2: Run existing tests to verify no regression**
 
-Run: `cd /Users/yas/0/fde-training/capstone/backend && .venv/bin/pytest tests/unit/ -v -x`
+Run: `cd backend && .venv/bin/pytest tests/unit/ -v -x`
 Expected: All pass
 
 - [ ] **Step 3: Commit**
@@ -93,7 +93,7 @@ In the SSE event parsing loop, add a handler for the `citations` event:
 
 - [ ] **Step 2: Verify frontend builds**
 
-Run: `cd /Users/yas/0/fde-training/capstone/frontend && npm run build`
+Run: `cd frontend && npm run build`
 Expected: Build succeeds
 
 - [ ] **Step 3: Commit**
@@ -122,7 +122,7 @@ The exact state variable name depends on the current App.tsx implementation. Rea
 
 - [ ] **Step 2: Verify frontend builds**
 
-Run: `cd /Users/yas/0/fde-training/capstone/frontend && npm run build`
+Run: `cd frontend && npm run build`
 Expected: Build succeeds
 
 - [ ] **Step 3: Commit**

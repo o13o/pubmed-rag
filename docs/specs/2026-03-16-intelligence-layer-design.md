@@ -2,7 +2,7 @@
 
 ## Overview
 
-Add three new agents to the existing multi-agent analysis framework to fulfill Requirement 2 "Medical Research Intelligence Layer" from `capstone/statements.md`:
+Add three new agents to the existing multi-agent analysis framework to fulfill Requirement 2 "Medical Research Intelligence Layer" from `statements.md`:
 
 1. **Conflicting Findings Agent** — identifies contradictory conclusions across studies
 2. **Trend Analysis Agent** — detects emerging research trends and directions

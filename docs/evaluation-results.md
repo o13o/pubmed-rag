@@ -88,7 +88,7 @@ The Contextual Relevancy metric (replacing Contextual Precision which required e
 ## Reproduction
 
 ```bash
-cd capstone/backend
+cd backend
 
 # Requires: Milvus running, data ingested, OPENAI_API_KEY set
 # Note: stop the backend server first to avoid DuckDB lock conflicts

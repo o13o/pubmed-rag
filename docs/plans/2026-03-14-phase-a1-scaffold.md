@@ -4,7 +4,7 @@
 
 **Goal:** Set up the project structure, dependency management, Docker Compose with Milvus, and verify Milvus connectivity.
 
-**Architecture:** Python project managed by uv with pyproject.toml. Milvus 2.5+ runs via Docker Compose. Backend code lives in `capstone/backend/src/`.
+**Architecture:** Python project managed by uv with pyproject.toml. Milvus 2.5+ runs via Docker Compose. Backend code lives in `backend/src/`.
 
 **Tech Stack:** uv, Docker Compose, Milvus 2.5+, pymilvus, pytest
 
@@ -17,17 +17,17 @@
 ### Task 1: Initialize Python Project with uv
 
 **Files:**
-- Create: `capstone/backend/pyproject.toml`
-- Create: `capstone/backend/src/__init__.py`
-- Create: `capstone/backend/src/shared/__init__.py`
-- Create: `capstone/backend/src/ingestion/__init__.py`
-- Create: `capstone/backend/src/retrieval/__init__.py`
-- Create: `capstone/backend/src/rag/__init__.py`
-- Create: `capstone/backend/src/guardrails/__init__.py`
-- Create: `capstone/backend/src/api/__init__.py`
-- Create: `capstone/backend/tests/__init__.py`
-- Create: `capstone/backend/tests/unit/__init__.py`
-- Create: `capstone/backend/tests/integration/__init__.py`
+- Create: `backend/pyproject.toml`
+- Create: `backend/src/__init__.py`
+- Create: `backend/src/shared/__init__.py`
+- Create: `backend/src/ingestion/__init__.py`
+- Create: `backend/src/retrieval/__init__.py`
+- Create: `backend/src/rag/__init__.py`
+- Create: `backend/src/guardrails/__init__.py`
+- Create: `backend/src/api/__init__.py`
+- Create: `backend/tests/__init__.py`
+- Create: `backend/tests/unit/__init__.py`
+- Create: `backend/tests/integration/__init__.py`
 
 - [ ] **Step 1: Create pyproject.toml**
 
@@ -69,7 +69,7 @@ pythonpath = ["."]
 
 Create empty `__init__.py` in each directory listed above:
 ```bash
-cd capstone/backend
+cd backend
 mkdir -p src/shared src/ingestion src/retrieval src/rag src/guardrails src/api tests/unit tests/integration
 touch src/__init__.py src/shared/__init__.py src/ingestion/__init__.py src/retrieval/__init__.py src/rag/__init__.py src/guardrails/__init__.py src/api/__init__.py tests/__init__.py tests/unit/__init__.py tests/integration/__init__.py
 ```
@@ -77,7 +77,7 @@ touch src/__init__.py src/shared/__init__.py src/ingestion/__init__.py src/retri
 - [ ] **Step 3: Initialize uv and install dependencies**
 
 ```bash
-cd capstone/backend
+cd backend
 uv sync
 ```
 
@@ -85,7 +85,7 @@ Expected: `.venv` created, all dependencies installed.
 
 - [ ] **Step 4: Create .gitignore**
 
-Create: `capstone/backend/.gitignore`
+Create: `backend/.gitignore`
 
 ```gitignore
 .venv/
@@ -99,7 +99,7 @@ data/
 
 - [ ] **Step 5: Create .env.example**
 
-Create: `capstone/backend/.env.example`
+Create: `backend/.env.example`
 
 ```env
 # OpenAI (for embeddings and default LLM)
@@ -117,7 +117,7 @@ EMBEDDING_MODEL=text-embedding-3-small
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/
+git add backend/
 git commit -m "feat(scaffold): initialize backend project with uv and module structure"
 ```
 
@@ -126,7 +126,7 @@ git commit -m "feat(scaffold): initialize backend project with uv and module str
 ### Task 2: Docker Compose with Milvus
 
 **Files:**
-- Create: `capstone/docker-compose.yml`
+- Create: `docker-compose.yml`
 
 - [ ] **Step 1: Create docker-compose.yml**
 
@@ -202,7 +202,7 @@ volumes:
 - [ ] **Step 2: Start Milvus and verify it's running**
 
 ```bash
-cd capstone
+# cd to repository root
 docker compose up -d
 docker compose ps
 ```
@@ -212,7 +212,7 @@ Expected: All 3 services (etcd, minio, milvus) running and healthy.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add capstone/docker-compose.yml
+git add docker-compose.yml
 git commit -m "infra: add Docker Compose for Milvus 2.5 standalone"
 ```
 
@@ -221,8 +221,8 @@ git commit -m "infra: add Docker Compose for Milvus 2.5 standalone"
 ### Task 3: Milvus Collection Setup Script + Connectivity Test
 
 **Files:**
-- Create: `capstone/backend/src/ingestion/milvus_setup.py`
-- Create: `capstone/backend/tests/integration/test_milvus_connection.py`
+- Create: `backend/src/ingestion/milvus_setup.py`
+- Create: `backend/tests/integration/test_milvus_connection.py`
 
 - [ ] **Step 1: Write integration test for Milvus connectivity**
 
@@ -267,7 +267,7 @@ def test_create_and_drop_collection():
 - [ ] **Step 2: Run test to verify it fails (Milvus not yet configured in test path)**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/integration/test_milvus_connection.py -v
 ```
 
@@ -365,7 +365,7 @@ def test_pubmed_collection_setup():
 - [ ] **Step 5: Run all integration tests**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/integration/test_milvus_connection.py -v
 ```
 
@@ -374,6 +374,6 @@ Expected: All 3 tests PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/src/ingestion/milvus_setup.py capstone/backend/tests/integration/test_milvus_connection.py
+git add backend/src/ingestion/milvus_setup.py backend/tests/integration/test_milvus_connection.py
 git commit -m "feat(milvus): add collection schema setup and connectivity tests"
 ```

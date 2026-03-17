@@ -19,7 +19,7 @@
 ### Task 1: Update Milvus Collection Schema with BM25
 
 **Files:**
-- Modify: `capstone/backend/src/ingestion/milvus_setup.py`
+- Modify: `backend/src/ingestion/milvus_setup.py`
 
 - [ ] **Step 1: Update `get_schema()` to include BM25 Function**
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/backend/src/ingestion/milvus_setup.py
+git add backend/src/ingestion/milvus_setup.py
 git commit -m "feat(milvus): add BM25 Function + sparse vector field to collection schema"
 ```
 
@@ -146,8 +146,8 @@ git commit -m "feat(milvus): add BM25 Function + sparse vector field to collecti
 ### Task 2: Add Hybrid Search to search.py
 
 **Files:**
-- Modify: `capstone/backend/src/retrieval/search.py`
-- Modify: `capstone/backend/tests/unit/test_search.py`
+- Modify: `backend/src/retrieval/search.py`
+- Modify: `backend/tests/unit/test_search.py`
 
 - [ ] **Step 1: Write failing tests for hybrid search**
 
@@ -173,7 +173,7 @@ def test_resolve_search_mode_default_from_config(monkeypatch):
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_search.py::test_resolve_search_mode_from_filters -v
 ```
 
@@ -362,7 +362,7 @@ def search(
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_search.py -v
 ```
 
@@ -371,6 +371,6 @@ Expected: All 8 tests PASS (6 existing + 2 new).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/retrieval/search.py capstone/backend/tests/unit/test_search.py
+git add backend/src/retrieval/search.py backend/tests/unit/test_search.py
 git commit -m "feat(retrieval): add hybrid search mode (dense + BM25 via RRF fusion)"
 ```

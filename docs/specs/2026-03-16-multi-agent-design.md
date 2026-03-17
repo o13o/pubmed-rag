@@ -4,7 +4,7 @@
 **Status:** Approved
 **Parent Spec:** [2026-03-14-pubmed-rag-system-design.md](2026-03-14-pubmed-rag-system-design.md)
 
-All file paths are relative to `capstone/`.
+All file paths are relative to the repository root.
 
 ## 1. Goal
 

@@ -3,7 +3,7 @@
 **Date:** 2026-03-17
 **Status:** Approved
 
-All file paths are relative to `capstone/`.
+All file paths are relative to the repository root.
 
 ## 1. Goal
 

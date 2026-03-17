@@ -44,7 +44,7 @@ Variable substitution uses Python `str.format()`.
 ### Directory Structure
 
 ```
-capstone/backend/prompts/
+backend/prompts/
 ├── rag/
 │   └── system.yaml
 ├── guardrails/
@@ -82,7 +82,7 @@ def load_prompt(name: str) -> dict:
     """
 ```
 
-- Resolves paths relative to `capstone/backend/prompts/`
+- Resolves paths relative to `backend/prompts/`
 - Caches loaded prompts in a module-level dict (prompts don't change at runtime)
 - Raises `FileNotFoundError` with a clear message if the YAML file is missing
 

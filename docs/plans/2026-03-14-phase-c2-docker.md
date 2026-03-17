@@ -4,7 +4,7 @@
 
 **Goal:** Containerize the FastAPI backend and add it to the existing Docker Compose alongside Milvus. One `docker compose up` starts the entire stack.
 
-**Architecture:** Dockerfile for backend (`capstone/backend/Dockerfile`). Docker Compose adds `backend` service that depends on `milvus` healthy. Backend connects to Milvus via Docker network (`milvus:19530`).
+**Architecture:** Dockerfile for backend (`backend/Dockerfile`). Docker Compose adds `backend` service that depends on `milvus` healthy. Backend connects to Milvus via Docker network (`milvus:19530`).
 
 **Tech Stack:** Docker, Docker Compose, uv (in-container build)
 
@@ -19,8 +19,8 @@
 ### Task 1: Backend Dockerfile
 
 **Files:**
-- Create: `capstone/backend/Dockerfile`
-- Create: `capstone/backend/.dockerignore`
+- Create: `backend/Dockerfile`
+- Create: `backend/.dockerignore`
 
 - [ ] **Step 1: Create .dockerignore**
 
@@ -39,7 +39,7 @@ data/
 - [ ] **Step 2: Create Dockerfile**
 
 ```dockerfile
-# capstone/backend/Dockerfile
+# backend/Dockerfile
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -64,7 +64,7 @@ CMD ["uv", "run", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", 
 - [ ] **Step 3: Test Docker build**
 
 ```bash
-cd capstone/backend
+cd backend
 docker build -t pubmed-rag-backend .
 ```
 
@@ -73,7 +73,7 @@ Expected: Build succeeds.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add capstone/backend/Dockerfile capstone/backend/.dockerignore
+git add backend/Dockerfile backend/.dockerignore
 git commit -m "infra: add backend Dockerfile with uv"
 ```
 
@@ -82,7 +82,7 @@ git commit -m "infra: add backend Dockerfile with uv"
 ### Task 2: Update Docker Compose
 
 **Files:**
-- Modify: `capstone/docker-compose.yml`
+- Modify: `docker-compose.yml`
 
 - [ ] **Step 1: Add backend service to docker-compose.yml**
 
@@ -120,7 +120,7 @@ Add the following `backend` service after the `milvus` service:
 - [ ] **Step 2: Test full stack startup**
 
 ```bash
-cd capstone
+# cd to repository root
 docker compose up -d --build
 docker compose ps
 ```
@@ -138,7 +138,7 @@ Expected: `{"status": "ok", "milvus_connected": true, ...}`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add capstone/docker-compose.yml
+git add docker-compose.yml
 git commit -m "infra: add backend service to Docker Compose"
 ```
 
@@ -147,7 +147,7 @@ git commit -m "infra: add backend service to Docker Compose"
 ### Task 3: Compose .env.example
 
 **Files:**
-- Create: `capstone/.env.example`
+- Create: `.env.example`
 
 - [ ] **Step 1: Create .env.example for docker-compose**
 
@@ -164,6 +164,6 @@ RERANKER_TYPE=cross_encoder
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/.env.example
+git add .env.example
 git commit -m "docs: add .env.example for Docker Compose"
 ```

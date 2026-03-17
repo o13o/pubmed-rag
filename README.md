@@ -44,8 +44,6 @@ An AI-powered multimodal medical research retrieval and analysis system that all
 ### 1. Start Infrastructure (Milvus)
 
 ```bash
-cd capstone
-
 # Set your OpenAI API key
 export OPENAI_API_KEY="sk-..."
 
@@ -59,7 +57,7 @@ docker compose ps
 ### 2. Install Backend Dependencies
 
 ```bash
-cd capstone/backend
+cd backend
 cp ../.env.example .env   # Edit and set OPENAI_API_KEY
 uv sync
 ```
@@ -94,7 +92,6 @@ uv run uvicorn src.api.main:app --reload --port 8000
 Or via Docker:
 
 ```bash
-cd capstone
 docker compose up -d backend
 ```
 
@@ -103,7 +100,7 @@ API available at `http://localhost:8000`. Health check: `GET /health`.
 ### 6. Start the Frontend
 
 ```bash
-cd capstone/frontend
+cd frontend
 npm install
 VITE_API_BASE=http://localhost:8000 npm run dev
 ```
@@ -310,7 +307,7 @@ The returned text can then be used as input to `/ask` or `/search`. In the front
 ### CLI Usage
 
 ```bash
-cd capstone/backend
+cd backend
 
 # Basic query
 uv run python -m src.cli "What are the latest treatments for breast cancer?"
@@ -397,7 +394,7 @@ The agent logic is also reused as custom DeepEval metrics for evaluating RAG qua
 The project uses [DeepEval](https://docs.confident-ai.com/) for RAG quality evaluation with both standard and custom metrics:
 
 ```bash
-cd capstone/backend
+cd backend
 uv pip install -e ".[eval]"
 uv run pytest tests/eval/test_rag_evaluation.py -v
 ```
@@ -417,7 +414,7 @@ uv run pytest tests/eval/test_rag_evaluation.py -v
 ## Running Tests
 
 ```bash
-cd capstone/backend
+cd backend
 
 # Unit tests (all modules + all agents)
 uv run pytest tests/unit/ -v
@@ -459,7 +456,7 @@ To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LAN
 ## Project Structure
 
 ```
-capstone/
+pubmed-rag/
 ├── docker-compose.yml              # Milvus + etcd + MinIO + Backend + Frontend
 ├── .env.example                    # Environment variable template
 ├── docs/

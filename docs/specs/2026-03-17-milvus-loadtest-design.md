@@ -15,7 +15,7 @@ The existing load test (`loadtest/locustfile.py`) targets the HTTP API layer, wh
 ### Folder Structure
 
 ```
-capstone/loadtest/
+loadtest/
 ├── api/
 │   ├── locustfile.py    # existing API load test (moved)
 │   └── README.md        # existing README (moved)

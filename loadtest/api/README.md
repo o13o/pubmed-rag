@@ -13,7 +13,7 @@ pip install locust
 ### Web UI mode
 
 ```bash
-cd capstone/loadtest
+cd loadtest/api
 locust
 ```
 

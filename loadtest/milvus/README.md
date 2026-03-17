@@ -13,7 +13,7 @@ pip install locust numpy pymilvus
 ### Web UI mode
 
 ```bash
-cd capstone/loadtest/milvus
+cd loadtest/milvus
 locust
 ```
 

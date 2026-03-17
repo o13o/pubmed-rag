@@ -1,7 +1,7 @@
 """Smoke test: ingest 100 articles → search → verify results.
 
 Usage:
-    cd capstone/backend
+    cd backend
     uv run python scripts/smoke_test.py
 """
 

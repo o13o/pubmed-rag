@@ -8,9 +8,9 @@
 
 **Tech Stack:** LiteLLM (streaming), FastAPI `StreamingResponse`, SSE wire format
 
-**Spec:** `capstone/docs/specs/2026-03-15-sse-streaming-design.md`
+**Spec:** `docs/specs/2026-03-15-sse-streaming-design.md`
 
-All file paths relative to `capstone/backend/`.
+All file paths relative to `backend/`.
 
 ---
 
@@ -77,7 +77,7 @@ def test_llm_client_complete_stream_handles_empty_choices():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_llm.py::test_llm_client_complete_stream -v`
+Run: `cd backend && uv run pytest tests/unit/test_llm.py::test_llm_client_complete_stream -v`
 Expected: FAIL — `LLMClient` has no `complete_stream` method
 
 - [ ] **Step 3: Implement `complete_stream()`**
@@ -126,7 +126,7 @@ class LLMClient:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_llm.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_llm.py -v`
 Expected: ALL PASS (existing tests + 2 new tests)
 
 - [ ] **Step 5: Commit**
@@ -250,7 +250,7 @@ def test_ask_stream_yields_error_on_exception(mock_expander_cls, mock_search):
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_chain.py::test_ask_stream_yields_token_and_done_events -v`
+Run: `cd backend && uv run pytest tests/unit/test_chain.py::test_ask_stream_yields_token_and_done_events -v`
 Expected: FAIL — `ask_stream` cannot be imported
 
 - [ ] **Step 3: Implement `ask_stream()`**
@@ -349,7 +349,7 @@ def ask_stream(
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_chain.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_chain.py -v`
 Expected: ALL PASS (existing 3 tests + 3 new tests)
 
 - [ ] **Step 5: Commit**
@@ -423,7 +423,7 @@ def test_ask_stream_false_returns_json(mock_ask, client):
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_api_ask.py::test_ask_stream_returns_sse -v`
+Run: `cd backend && uv run pytest tests/unit/test_api_ask.py::test_ask_stream_returns_sse -v`
 Expected: FAIL — `stream` field not in `AskRequest`, `ask_stream` not imported
 
 - [ ] **Step 3: Implement SSE route**
@@ -533,12 +533,12 @@ def ask_endpoint(
 
 - [ ] **Step 4: Run all tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_api_ask.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_api_ask.py -v`
 Expected: ALL PASS (existing 2 tests + 3 new tests)
 
 - [ ] **Step 5: Run full backend test suite**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/ -v`
+Run: `cd backend && uv run pytest tests/unit/ -v`
 Expected: ALL PASS
 
 - [ ] **Step 6: Commit**

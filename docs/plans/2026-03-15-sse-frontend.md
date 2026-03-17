@@ -8,11 +8,11 @@
 
 **Tech Stack:** React, TypeScript, Fetch API / ReadableStream, SSE parsing
 
-**Spec:** `capstone/docs/specs/2026-03-15-sse-streaming-design.md`
+**Spec:** `docs/specs/2026-03-15-sse-streaming-design.md`
 
 **Dependency:** Backend SSE endpoint must be implemented first (see `2026-03-15-sse-backend.md`). However, the frontend code can be written and type-checked independently — integration testing requires the backend.
 
-All file paths relative to `capstone/frontend/`.
+All file paths relative to `frontend/`.
 
 ---
 
@@ -59,7 +59,7 @@ export interface AskRequest {
 
 - [ ] **Step 2: Verify types compile**
 
-Run: `cd capstone/frontend && npx tsc --noEmit`
+Run: `cd frontend && npx tsc --noEmit`
 Expected: No errors
 
 - [ ] **Step 3: Commit**
@@ -169,7 +169,7 @@ export async function askQueryStream(
 
 - [ ] **Step 2: Verify types compile**
 
-Run: `cd capstone/frontend && npx tsc --noEmit`
+Run: `cd frontend && npx tsc --noEmit`
 Expected: No errors
 
 - [ ] **Step 3: Commit**
@@ -400,12 +400,12 @@ Note: The `messages` prop already contains the streaming assistant message, so c
 
 - [ ] **Step 3: Verify types compile**
 
-Run: `cd capstone/frontend && npx tsc --noEmit`
+Run: `cd frontend && npx tsc --noEmit`
 Expected: No errors
 
 - [ ] **Step 4: Verify dev server starts**
 
-Run: `cd capstone/frontend && npm run dev`
+Run: `cd frontend && npm run dev`
 Expected: Compiles without errors, accessible at http://localhost:5173
 
 - [ ] **Step 5: Commit**

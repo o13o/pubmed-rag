@@ -1,7 +1,7 @@
 """Locust load test for Milvus search performance (bypasses API/LLM layer).
 
 Usage:
-    cd capstone/loadtest/milvus
+    cd loadtest/milvus
     pip install locust numpy pymilvus
     locust                                # Web UI at http://localhost:8089
     locust --headless -u 10 -r 2 -t 60s  # Headless: 10 users, ramp 2/s, 60s

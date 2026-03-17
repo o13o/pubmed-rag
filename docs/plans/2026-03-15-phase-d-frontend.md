@@ -17,7 +17,7 @@
 ## File Structure
 
 ```
-capstone/frontend/
+frontend/
   index.html
   package.json
   tsconfig.json
@@ -44,35 +44,35 @@ capstone/frontend/
 ### Task 1: Initialize Vite + React + TypeScript project
 
 **Files:**
-- Create: `capstone/frontend/package.json` (via `npm create vite`)
-- Create: `capstone/frontend/vite.config.ts`
-- Create: `capstone/frontend/tsconfig.json`
-- Create: `capstone/frontend/index.html`
+- Create: `frontend/package.json` (via `npm create vite`)
+- Create: `frontend/vite.config.ts`
+- Create: `frontend/tsconfig.json`
+- Create: `frontend/index.html`
 
 - [ ] **Step 1: Scaffold Vite project**
 
 ```bash
-cd capstone
+# cd to repository root
 npm create vite@latest frontend -- --template react-ts
 ```
 
 - [ ] **Step 2: Install dependencies**
 
 ```bash
-cd capstone/frontend
+cd frontend
 npm install
 ```
 
 - [ ] **Step 3: Install Tailwind CSS v4**
 
 ```bash
-cd capstone/frontend
+cd frontend
 npm install tailwindcss @tailwindcss/vite
 ```
 
 - [ ] **Step 4: Configure Vite with Tailwind and API proxy**
 
-Replace the contents of `capstone/frontend/vite.config.ts`:
+Replace the contents of `frontend/vite.config.ts`:
 
 ```typescript
 import { defineConfig } from "vite";
@@ -93,7 +93,7 @@ export default defineConfig({
 
 - [ ] **Step 5: Configure Tailwind CSS**
 
-Replace the contents of `capstone/frontend/src/index.css`:
+Replace the contents of `frontend/src/index.css`:
 
 ```css
 @import "tailwindcss";
@@ -102,7 +102,7 @@ Replace the contents of `capstone/frontend/src/index.css`:
 - [ ] **Step 6: Verify dev server starts**
 
 ```bash
-cd capstone/frontend
+cd frontend
 npm run dev
 ```
 
@@ -111,7 +111,7 @@ Expected: Vite dev server starts on `http://localhost:5173` with default React p
 - [ ] **Step 7: Commit**
 
 ```bash
-git add capstone/frontend/
+git add frontend/
 git commit -m "feat(frontend): scaffold Vite + React + TypeScript + Tailwind"
 ```
 
@@ -122,7 +122,7 @@ git commit -m "feat(frontend): scaffold Vite + React + TypeScript + Tailwind"
 ### Task 2: TypeScript type definitions
 
 **Files:**
-- Create: `capstone/frontend/src/types/index.ts`
+- Create: `frontend/src/types/index.ts`
 
 - [ ] **Step 1: Create type definitions matching backend Pydantic models**
 
@@ -206,7 +206,7 @@ export interface Message {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/types/
+git add frontend/src/types/
 git commit -m "feat(frontend): add TypeScript type definitions"
 ```
 
@@ -215,7 +215,7 @@ git commit -m "feat(frontend): add TypeScript type definitions"
 ### Task 3: API client
 
 **Files:**
-- Create: `capstone/frontend/src/lib/api.ts`
+- Create: `frontend/src/lib/api.ts`
 
 - [ ] **Step 1: Create API client with configurable base URL**
 
@@ -261,7 +261,7 @@ export async function searchQuery(
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/lib/
+git add frontend/src/lib/
 git commit -m "feat(frontend): add API client with configurable base URL"
 ```
 
@@ -272,7 +272,7 @@ git commit -m "feat(frontend): add API client with configurable base URL"
 ### Task 4: MessageBubble component
 
 **Files:**
-- Create: `capstone/frontend/src/components/MessageBubble.tsx`
+- Create: `frontend/src/components/MessageBubble.tsx`
 
 - [ ] **Step 1: Implement MessageBubble**
 
@@ -340,7 +340,7 @@ export function MessageBubble({ message }: Props) {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/components/MessageBubble.tsx
+git add frontend/src/components/MessageBubble.tsx
 git commit -m "feat(frontend): add MessageBubble component"
 ```
 
@@ -349,7 +349,7 @@ git commit -m "feat(frontend): add MessageBubble component"
 ### Task 5: FilterPanel component
 
 **Files:**
-- Create: `capstone/frontend/src/components/FilterPanel.tsx`
+- Create: `frontend/src/components/FilterPanel.tsx`
 
 - [ ] **Step 1: Implement FilterPanel**
 
@@ -487,7 +487,7 @@ export function FilterPanel({
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/components/FilterPanel.tsx
+git add frontend/src/components/FilterPanel.tsx
 git commit -m "feat(frontend): add FilterPanel component with mode and search_mode toggle"
 ```
 
@@ -496,7 +496,7 @@ git commit -m "feat(frontend): add FilterPanel component with mode and search_mo
 ### Task 6: ResultsPanel component
 
 **Files:**
-- Create: `capstone/frontend/src/components/ResultsPanel.tsx`
+- Create: `frontend/src/components/ResultsPanel.tsx`
 
 - [ ] **Step 1: Implement ResultsPanel**
 
@@ -619,7 +619,7 @@ export function ResultsPanel({ citations, searchResults, mode }: Props) {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/components/ResultsPanel.tsx
+git add frontend/src/components/ResultsPanel.tsx
 git commit -m "feat(frontend): add ResultsPanel component (citations + search results)"
 ```
 
@@ -628,7 +628,7 @@ git commit -m "feat(frontend): add ResultsPanel component (citations + search re
 ### Task 7: ChatPanel component
 
 **Files:**
-- Create: `capstone/frontend/src/components/ChatPanel.tsx`
+- Create: `frontend/src/components/ChatPanel.tsx`
 
 - [ ] **Step 1: Implement ChatPanel**
 
@@ -709,7 +709,7 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/components/ChatPanel.tsx
+git add frontend/src/components/ChatPanel.tsx
 git commit -m "feat(frontend): add ChatPanel component with message list and input"
 ```
 
@@ -720,11 +720,11 @@ git commit -m "feat(frontend): add ChatPanel component with message list and inp
 ### Task 8: App.tsx — wire everything together
 
 **Files:**
-- Modify: `capstone/frontend/src/App.tsx`
+- Modify: `frontend/src/App.tsx`
 
 - [ ] **Step 1: Implement App.tsx with state management**
 
-Replace the contents of `capstone/frontend/src/App.tsx`:
+Replace the contents of `frontend/src/App.tsx`:
 
 ```tsx
 // src/App.tsx
@@ -852,7 +852,7 @@ export default App;
 
 - [ ] **Step 2: Clean up main.tsx**
 
-Replace the contents of `capstone/frontend/src/main.tsx`:
+Replace the contents of `frontend/src/main.tsx`:
 
 ```tsx
 import { StrictMode } from "react";
@@ -870,14 +870,14 @@ createRoot(document.getElementById("root")!).render(
 - [ ] **Step 3: Delete default Vite boilerplate files**
 
 ```bash
-cd capstone/frontend
+cd frontend
 rm -f src/App.css src/assets/react.svg public/vite.svg
 ```
 
 - [ ] **Step 4: Verify dev server compiles**
 
 ```bash
-cd capstone/frontend
+cd frontend
 npm run dev
 ```
 
@@ -887,7 +887,7 @@ Expected: Vite compiles with no TypeScript errors. Open `http://localhost:5173` 
 
 ```bash
 # In another terminal, start backend:
-cd capstone/backend
+cd backend
 set -a && source .env && set +a
 uv run uvicorn src.api.main:app --port 8000
 ```
@@ -899,7 +899,7 @@ Then in the browser at `http://localhost:5173`:
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/frontend/
+git add frontend/
 git commit -m "feat(frontend): wire up App with ChatPanel, FilterPanel, ResultsPanel"
 ```
 
@@ -910,7 +910,7 @@ git commit -m "feat(frontend): wire up App with ChatPanel, FilterPanel, ResultsP
 - [ ] **Step 1: Verify production build works**
 
 ```bash
-cd capstone/frontend
+cd frontend
 npm run build
 ```
 

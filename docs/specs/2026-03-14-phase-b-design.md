@@ -266,7 +266,7 @@ Adding a new metric: create a class inheriting `BaseMetric` in `metrics/`, add i
 
 ```bash
 # Run evaluation suite
-cd capstone/backend
+cd backend
 uv run deepeval test run tests/eval/test_rag_evaluation.py
 
 # Or via pytest

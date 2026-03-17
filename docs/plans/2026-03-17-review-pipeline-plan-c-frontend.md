@@ -15,11 +15,11 @@
 ### Task 1: Add TypeScript types for LiteratureReview
 
 **Files:**
-- Modify: `capstone/frontend/src/types/index.ts`
+- Modify: `frontend/src/types/index.ts`
 
 - [ ] **Step 1: Add LiteratureReview types**
 
-Append to `capstone/frontend/src/types/index.ts`:
+Append to `frontend/src/types/index.ts`:
 
 ```typescript
 export interface ReviewRequest {
@@ -48,7 +48,7 @@ export interface LiteratureReview {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/types/index.ts
+git add frontend/src/types/index.ts
 git commit -m "feat: add LiteratureReview TypeScript types"
 ```
 
@@ -57,11 +57,11 @@ git commit -m "feat: add LiteratureReview TypeScript types"
 ### Task 2: Add reviewQuery API function
 
 **Files:**
-- Modify: `capstone/frontend/src/lib/api.ts`
+- Modify: `frontend/src/lib/api.ts`
 
 - [ ] **Step 1: Add the API function**
 
-Add import to the top of `capstone/frontend/src/lib/api.ts`:
+Add import to the top of `frontend/src/lib/api.ts`:
 ```typescript
 import type {
   AnalyzeRequest,
@@ -79,7 +79,7 @@ import type {
 } from "../types";
 ```
 
-Append to the end of `capstone/frontend/src/lib/api.ts`:
+Append to the end of `frontend/src/lib/api.ts`:
 
 ```typescript
 export async function reviewQuery(
@@ -101,7 +101,7 @@ export async function reviewQuery(
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/lib/api.ts
+git add frontend/src/lib/api.ts
 git commit -m "feat: add reviewQuery API function"
 ```
 
@@ -110,11 +110,11 @@ git commit -m "feat: add reviewQuery API function"
 ### Task 3: Create ReviewPanel component
 
 **Files:**
-- Create: `capstone/frontend/src/components/ReviewPanel.tsx`
+- Create: `frontend/src/components/ReviewPanel.tsx`
 
 - [ ] **Step 1: Create the component**
 
-Create `capstone/frontend/src/components/ReviewPanel.tsx`:
+Create `frontend/src/components/ReviewPanel.tsx`:
 
 ```tsx
 import { useState } from "react";
@@ -210,7 +210,7 @@ export function ReviewPanel({ review, loading }: Props) {
 - [ ] **Step 2: Commit**
 
 ```bash
-git add capstone/frontend/src/components/ReviewPanel.tsx
+git add frontend/src/components/ReviewPanel.tsx
 git commit -m "feat: add ReviewPanel component"
 ```
 
@@ -219,11 +219,11 @@ git commit -m "feat: add ReviewPanel component"
 ### Task 4: Integrate into App.tsx
 
 **Files:**
-- Modify: `capstone/frontend/src/App.tsx`
+- Modify: `frontend/src/App.tsx`
 
 - [ ] **Step 1: Add imports**
 
-Add to the imports in `capstone/frontend/src/App.tsx`:
+Add to the imports in `frontend/src/App.tsx`:
 
 ```typescript
 import { ReviewPanel } from "./components/ReviewPanel";
@@ -330,12 +330,12 @@ In the sidebar `<aside>` section, add the "Generate Literature Review" button af
 
 - [ ] **Step 6: Verify the app compiles**
 
-Run: `cd capstone/frontend && npm run build`
+Run: `cd frontend && npm run build`
 Expected: Build succeeds with no TypeScript errors
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add capstone/frontend/src/App.tsx
+git add frontend/src/App.tsx
 git commit -m "feat: integrate literature review button and panel into App"
 ```

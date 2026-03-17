@@ -85,7 +85,7 @@ def test_retrieval_handles_llm_failure():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_retrieval.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_retrieval.py -v`
 Expected: FAIL — `ModuleNotFoundError`
 
 - [ ] **Step 3: Implement RetrievalAgent**
@@ -164,7 +164,7 @@ class RetrievalAgent:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_retrieval.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_retrieval.py -v`
 Expected: ALL 2 PASS
 
 - [ ] **Step 5: Commit**
@@ -246,7 +246,7 @@ def test_statistical_reviewer_handles_llm_failure():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_statistical.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_statistical.py -v`
 Expected: FAIL — `ModuleNotFoundError`
 
 - [ ] **Step 3: Implement StatisticalReviewerAgent**
@@ -324,7 +324,7 @@ class StatisticalReviewerAgent:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_statistical.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_statistical.py -v`
 Expected: ALL 2 PASS
 
 - [ ] **Step 5: Commit**
@@ -383,12 +383,12 @@ def test_get_agents_empty_list():
 
 - [ ] **Step 2: Run tests**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_registry.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_registry.py -v`
 Expected: ALL 3 PASS
 
 - [ ] **Step 3: Run all agent tests together**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_agent_*.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_agent_*.py -v`
 Expected: ALL PASS
 
 - [ ] **Step 4: Commit**

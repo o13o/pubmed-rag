@@ -1,7 +1,7 @@
 """Run RAG evaluation via API and collect metrics.
 
 Usage:
-    cd capstone/backend
+    cd backend
     .venv/bin/python scripts/run_evaluation.py
 
 Requires: API server running at localhost:8000, OPENAI_API_KEY set.

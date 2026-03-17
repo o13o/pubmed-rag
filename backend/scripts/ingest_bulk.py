@@ -1,7 +1,7 @@
 """Bulk ingestion script for 100k PubMed records.
 
 Usage:
-    cd capstone/backend
+    cd backend
     uv run python scripts/ingest_bulk.py ../../data_pipeline/data/processed/sampled.jsonl
 
 Features:

@@ -33,7 +33,7 @@ The system is a single deployable unit composed of loosely-coupled modules. Each
 ### 3.2 Directory Structure
 
 ```
-capstone/
+pubmed-rag/
 ├── backend/
 │   ├── src/
 │   │   ├── shared/            # Cross-cutting concerns

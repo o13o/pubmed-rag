@@ -8,7 +8,7 @@
 
 **Tech Stack:** FastAPI, openai SDK 2.26.0, Python 3.11+
 
-**Spec:** `capstone/docs/specs/2026-03-16-multimodal-transcribe-design.md`
+**Spec:** `docs/specs/2026-03-16-multimodal-transcribe-design.md`
 
 **Parallel:** This plan can run in parallel with `2026-03-16-multimodal-b-frontend.md`.
 
@@ -107,13 +107,13 @@ def test_transcribe_rejects_oversized_file(client):
 
 - [ ] **Step 2: Run tests — expect failure (transcribe module not found)**
 
-Run: `cd capstone/backend && .venv/bin/python -m pytest tests/unit/test_api_transcribe.py -v`
+Run: `cd backend && .venv/bin/python -m pytest tests/unit/test_api_transcribe.py -v`
 Expected: ImportError or ModuleNotFoundError for `src.api.routes.transcribe`
 
 - [ ] **Step 3: Commit test file**
 
 ```bash
-git add capstone/backend/tests/unit/test_api_transcribe.py
+git add backend/tests/unit/test_api_transcribe.py
 git commit -m "test: add unit tests for POST /transcribe endpoint"
 ```
 
@@ -223,13 +223,13 @@ async def transcribe_endpoint(file: UploadFile):
 
 - [ ] **Step 2: Run tests — expect failure (router not registered yet, but imports work)**
 
-Run: `cd capstone/backend && .venv/bin/python -c "from src.api.routes.transcribe import router; print('OK')"`
+Run: `cd backend && .venv/bin/python -c "from src.api.routes.transcribe import router; print('OK')"`
 Expected: OK
 
 - [ ] **Step 3: Commit implementation**
 
 ```bash
-git add capstone/backend/src/api/routes/transcribe.py
+git add backend/src/api/routes/transcribe.py
 git commit -m "feat(api): add POST /transcribe endpoint for audio and image"
 ```
 
@@ -258,17 +258,17 @@ After line 77 (`app.include_router(analyze.router)`), add:
 
 - [ ] **Step 2: Run transcribe tests — should all pass**
 
-Run: `cd capstone/backend && .venv/bin/python -m pytest tests/unit/test_api_transcribe.py -v`
+Run: `cd backend && .venv/bin/python -m pytest tests/unit/test_api_transcribe.py -v`
 Expected: 4 passed
 
 - [ ] **Step 3: Run all unit tests — should still pass**
 
-Run: `cd capstone/backend && .venv/bin/python -m pytest tests/unit/ -q`
+Run: `cd backend && .venv/bin/python -m pytest tests/unit/ -q`
 Expected: 127 passed (123 existing + 4 new)
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add capstone/backend/src/api/main.py
+git add backend/src/api/main.py
 git commit -m "feat(api): register /transcribe router in app"
 ```

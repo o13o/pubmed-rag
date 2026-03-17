@@ -19,8 +19,8 @@
 ### Task 1: Replace Reranker Stub with Protocol + Implementations
 
 **Files:**
-- Modify: `capstone/backend/src/retrieval/reranker.py`
-- Create: `capstone/backend/tests/unit/test_reranker.py`
+- Modify: `backend/src/retrieval/reranker.py`
+- Create: `backend/tests/unit/test_reranker.py`
 
 - [ ] **Step 1: Write failing tests**
 
@@ -144,7 +144,7 @@ class TestGetReranker:
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_reranker.py -v
 ```
 
@@ -268,7 +268,7 @@ def get_reranker(
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd capstone/backend
+cd backend
 uv run pytest tests/unit/test_reranker.py -v
 ```
 
@@ -290,6 +290,6 @@ __all__ = ["QueryExpander", "get_reranker", "search"]
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/src/retrieval/reranker.py capstone/backend/src/retrieval/__init__.py capstone/backend/tests/unit/test_reranker.py
+git add backend/src/retrieval/reranker.py backend/src/retrieval/__init__.py backend/tests/unit/test_reranker.py
 git commit -m "feat(retrieval): add Protocol-based reranker (CrossEncoder + LLM + NoOp)"
 ```

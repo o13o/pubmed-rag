@@ -62,7 +62,7 @@ def test_agent_result_without_score():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_models.py::test_finding_model -v`
+Run: `cd backend && uv run pytest tests/unit/test_models.py::test_finding_model -v`
 Expected: FAIL — `ImportError: cannot import name 'AgentResult'`
 
 - [ ] **Step 3: Write minimal implementation**
@@ -97,7 +97,7 @@ class AgentResult(BaseModel):
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_models.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_models.py -v`
 Expected: ALL PASS
 
 - [ ] **Step 5: Commit**

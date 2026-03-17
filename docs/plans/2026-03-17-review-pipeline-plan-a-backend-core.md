@@ -15,8 +15,8 @@
 ### Task 1: Add LiteratureReview model
 
 **Files:**
-- Modify: `capstone/backend/src/shared/models.py`
-- Test: `capstone/backend/tests/unit/test_models_review.py`
+- Modify: `backend/src/shared/models.py`
+- Test: `backend/tests/unit/test_models_review.py`
 
 - [ ] **Step 1: Write the test**
 
@@ -50,12 +50,12 @@ def test_literature_review_round_trip():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_models_review.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_models_review.py -v`
 Expected: FAIL — `LiteratureReview` not defined
 
 - [ ] **Step 3: Add LiteratureReview to models.py**
 
-Append to `capstone/backend/src/shared/models.py`:
+Append to `backend/src/shared/models.py`:
 
 ```python
 class LiteratureReview(BaseModel):
@@ -73,13 +73,13 @@ class LiteratureReview(BaseModel):
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_models_review.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_models_review.py -v`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/shared/models.py capstone/backend/tests/unit/test_models_review.py
+git add backend/src/shared/models.py backend/tests/unit/test_models_review.py
 git commit -m "feat: add LiteratureReview model"
 ```
 
@@ -88,8 +88,8 @@ git commit -m "feat: add LiteratureReview model"
 ### Task 2: Create ReviewSynthesizer prompt YAML
 
 **Files:**
-- Create: `capstone/backend/prompts/agents/review_synthesizer.yaml`
-- Test: `capstone/backend/tests/unit/test_prompts.py` (existing test covers prompt loading)
+- Create: `backend/prompts/agents/review_synthesizer.yaml`
+- Test: `backend/tests/unit/test_prompts.py` (existing test covers prompt loading)
 
 - [ ] **Step 1: Create the prompt file**
 
@@ -121,7 +121,7 @@ system: |
 
 - [ ] **Step 2: Add to prompt loader test**
 
-In `capstone/backend/tests/unit/test_prompt_loader.py`, add `"agents/review_synthesizer"` to the `names` list in `test_all_prompt_files_loadable` (after `"agents/knowledge_graph"`):
+In `backend/tests/unit/test_prompt_loader.py`, add `"agents/review_synthesizer"` to the `names` list in `test_all_prompt_files_loadable` (after `"agents/knowledge_graph"`):
 
 ```python
         "agents/knowledge_graph",
@@ -130,7 +130,7 @@ In `capstone/backend/tests/unit/test_prompt_loader.py`, add `"agents/review_synt
 
 - [ ] **Step 3: Run prompt loader test to verify it fails**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_prompt_loader.py::test_all_prompt_files_loadable -v`
+Run: `cd backend && uv run pytest tests/unit/test_prompt_loader.py::test_all_prompt_files_loadable -v`
 Expected: FAIL — prompt file not found
 
 - [ ] **Step 4: Create the prompt file**
@@ -139,13 +139,13 @@ Expected: FAIL — prompt file not found
 
 - [ ] **Step 5: Run prompt loader test to verify it passes**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_prompt_loader.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_prompt_loader.py -v`
 Expected: PASS
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/prompts/agents/review_synthesizer.yaml capstone/backend/tests/unit/test_prompt_loader.py
+git add backend/prompts/agents/review_synthesizer.yaml backend/tests/unit/test_prompt_loader.py
 git commit -m "feat: add review synthesizer prompt YAML"
 ```
 
@@ -154,8 +154,8 @@ git commit -m "feat: add review synthesizer prompt YAML"
 ### Task 3: Implement ReviewSynthesizer
 
 **Files:**
-- Create: `capstone/backend/src/agents/review_synthesizer.py`
-- Test: `capstone/backend/tests/unit/test_review_synthesizer.py`
+- Create: `backend/src/agents/review_synthesizer.py`
+- Test: `backend/tests/unit/test_review_synthesizer.py`
 
 - [ ] **Step 1: Write the tests**
 
@@ -254,12 +254,12 @@ def test_synthesizer_handles_llm_failure():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_review_synthesizer.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_review_synthesizer.py -v`
 Expected: FAIL — module not found
 
 - [ ] **Step 3: Implement ReviewSynthesizer**
 
-Create `capstone/backend/src/agents/review_synthesizer.py`:
+Create `backend/src/agents/review_synthesizer.py`:
 
 ```python
 """ReviewSynthesizer — generates structured literature review from agent analyses.
@@ -344,13 +344,13 @@ class ReviewSynthesizer:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_review_synthesizer.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_review_synthesizer.py -v`
 Expected: 3 PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add capstone/backend/src/agents/review_synthesizer.py capstone/backend/tests/unit/test_review_synthesizer.py
+git add backend/src/agents/review_synthesizer.py backend/tests/unit/test_review_synthesizer.py
 git commit -m "feat: implement ReviewSynthesizer with tests"
 ```
 
@@ -359,8 +359,8 @@ git commit -m "feat: implement ReviewSynthesizer with tests"
 ### Task 4: Implement ReviewPipeline
 
 **Files:**
-- Create: `capstone/backend/src/agents/pipeline.py`
-- Test: `capstone/backend/tests/unit/test_review_pipeline.py`
+- Create: `backend/src/agents/pipeline.py`
+- Test: `backend/tests/unit/test_review_pipeline.py`
 
 - [ ] **Step 1: Write the tests**
 
@@ -469,12 +469,12 @@ def test_pipeline_raises_on_empty_search():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_review_pipeline.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_review_pipeline.py -v`
 Expected: FAIL — module not found
 
 - [ ] **Step 3: Implement ReviewPipeline**
 
-Create `capstone/backend/src/agents/pipeline.py`:
+Create `backend/src/agents/pipeline.py`:
 
 ```python
 """ReviewPipeline — 3-stage A2A agent pipeline for literature review generation.
@@ -566,17 +566,17 @@ class ReviewPipeline:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/test_review_pipeline.py -v`
+Run: `cd backend && uv run pytest tests/unit/test_review_pipeline.py -v`
 Expected: 3 PASS
 
 - [ ] **Step 5: Run all unit tests to check for regressions**
 
-Run: `cd capstone/backend && uv run pytest tests/unit/ -v`
+Run: `cd backend && uv run pytest tests/unit/ -v`
 Expected: All existing tests still pass
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add capstone/backend/src/agents/pipeline.py capstone/backend/tests/unit/test_review_pipeline.py
+git add backend/src/agents/pipeline.py backend/tests/unit/test_review_pipeline.py
 git commit -m "feat: implement ReviewPipeline with parallel agent execution"
 ```

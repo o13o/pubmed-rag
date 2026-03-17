@@ -335,7 +335,7 @@ In the `<aside>` section, between `<FilterPanel ... />` and `<ResultsPanel ... /
 
 - [ ] **Step 6: Verify TypeScript compiles**
 
-Run: `cd capstone/frontend && npx --package=typescript tsc --noEmit`
+Run: `cd frontend && npx --package=typescript tsc --noEmit`
 Expected: No errors
 
 - [ ] **Step 7: Commit**

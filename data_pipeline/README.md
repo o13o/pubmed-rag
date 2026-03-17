@@ -1,7 +1,7 @@
 # PubMed Pipeline (Playground)
 
 Toy implementation of the PubMed data download & sampling pipeline.
-See `capstone/docs/specs/2026-03-13-pubmed-download-pipeline-design.md` for full design.
+See `docs/specs/2026-03-13-pubmed-download-pipeline-design.md` for full design.
 
 ## Setup
 
