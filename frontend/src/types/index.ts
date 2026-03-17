@@ -115,5 +115,5 @@ export interface AnalyzeResponse {
 
 export interface TranscribeResponse {
   text: string;
-  media_type: "audio" | "image";
+  media_type: "audio" | "image" | "document";
 }

@@ -74,7 +74,7 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
         <input
           ref={fileInputRef}
           type="file"
-          accept="audio/*,image/*"
+          accept="audio/*,image/*,.pdf,.txt,.doc,.docx"
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -82,7 +82,7 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isDisabled}
-          title="Upload audio or image"
+          title="Upload audio, image, or document"
           className="bg-gray-800 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-600 text-gray-400 hover:text-gray-200 px-3 py-2 rounded-lg transition-colors"
         >
           {transcribing ? (

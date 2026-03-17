@@ -57,7 +57,7 @@ def test_transcribe_image(mock_transcribe, client):
 def test_transcribe_rejects_unsupported_mime(client):
     response = client.post(
         "/transcribe",
-        files={"file": ("doc.pdf", io.BytesIO(b"%PDF-1.4"), "application/pdf")},
+        files={"file": ("archive.zip", io.BytesIO(b"PK\x03\x04"), "application/zip")},
     )
     assert response.status_code == 415
 
