@@ -134,6 +134,7 @@ UI available at `http://localhost:5173`.
 | `POST` | `/ask` | Full RAG pipeline (supports SSE streaming via `stream: true`) |
 | `POST` | `/search` | Semantic/hybrid search with metadata filtering |
 | `POST` | `/analyze` | Multi-agent research analysis |
+| `POST` | `/review` | Literature review generation (3-stage A2A agent pipeline) |
 | `POST` | `/transcribe` | Convert audio/image/document to text (Whisper / GPT-4o-mini / PyMuPDF / python-docx) |
 
 ### Example: Ask (RAG Pipeline)
@@ -215,6 +216,54 @@ Response:
   ]
 }
 ```
+
+### Example: Literature Review Generation
+
+```bash
+curl -X POST http://localhost:8000/review \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mRNA vaccine efficacy and safety",
+    "top_k": 10,
+    "year_min": 2022,
+    "search_mode": "hybrid"
+  }'
+```
+
+Response:
+
+```json
+{
+  "query": "mRNA vaccine efficacy and safety",
+  "overview": "This review examines recent evidence on mRNA vaccine efficacy...",
+  "main_findings": "Multiple RCTs demonstrate sustained efficacy of mRNA vaccines...",
+  "gaps_and_conflicts": "Conflicting data exist regarding long-term durability...",
+  "recommendations": "Further large-scale studies are needed to evaluate...",
+  "citations": [
+    {
+      "pmid": "36789012",
+      "title": "Long-term Efficacy of BNT162b2 mRNA Vaccine...",
+      "journal": "New England Journal of Medicine",
+      "year": 2023,
+      "relevance_score": 0.934
+    }
+  ],
+  "search_results": [ ... ],
+  "agent_results": [
+    {
+      "agent_name": "methodology_critic",
+      "summary": "4 of 6 studies use randomized controlled trial design...",
+      "findings": [...],
+      "confidence": 0.88,
+      "score": 8
+    }
+  ],
+  "agents_succeeded": 6,
+  "agents_failed": 0
+}
+```
+
+The `/review` endpoint orchestrates a 3-stage pipeline: (1) search retrieval, (2) parallel analysis by 6 specialized agents, and (3) synthesis into a structured literature review. See the [Literature Review Pipeline Design](docs/specs/2026-03-17-literature-review-pipeline-design.md) for architecture details.
 
 ### Example: Transcribe (Multimodal Input)
 
@@ -329,6 +378,16 @@ The system includes 8 specialized agents that evaluate retrieved research from d
 
 Each agent uses a specialized system prompt + LLM call that returns structured JSON conforming to a common `AgentResult` schema. Agents operate independently (no inter-agent dependencies) and can be selectively invoked via the `agents` parameter in the `/analyze` endpoint.
 
+### Literature Review Pipeline (Agent-to-Agent Handoff)
+
+The `/review` endpoint implements Agent-to-Agent (A2A) communication via a 3-stage in-process pipeline:
+
+1. **Stage 1 — Search:** Retrieves relevant abstracts via `SearchClient`
+2. **Stage 2 — Parallel Analysis:** 6 agents run concurrently (`ThreadPoolExecutor`, `max_workers=6`): Methodology Critic, Statistical Reviewer, Clinical Applicability, Conflicting Findings, Trend Analysis, Knowledge Graph
+3. **Stage 3 — Synthesis:** `ReviewSynthesizer` merges search results + all agent analyses into a structured `LiteratureReview` with overview, main findings, gaps/conflicts, and recommendations
+
+Each stage's output feeds directly into the next stage as input (in-process function-call handoff). Partial agent failures are handled gracefully — the pipeline continues with degraded results rather than aborting.
+
 The agent logic is also reused as custom DeepEval metrics for evaluating RAG quality (MethodologyQuality, StatisticalValidity, ClinicalRelevance).
 
 ## Evaluation
@@ -391,7 +450,7 @@ To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LAN
 | Reranker | Cross-encoder (`ms-marco-MiniLM-L-6-v2`) | Improved precision; adds ~200ms per query |
 | LLM Abstraction | LiteLLM | Swap between GPT-4o, Claude, etc. without code changes |
 | MeSH Lookup | DuckDB (local) | Fast lookups for 30k+ descriptors; no external service dependency |
-| Agent Design | Independent agents, no inter-agent communication | Simple, testable, parallelizable; orchestration can be added later |
+| Agent Design | Independent agents + A2A pipeline for literature review | `/analyze`: independent, parallelizable; `/review`: 3-stage A2A handoff via in-process calls |
 | Guardrails | LLM-based grounding check + MeSH term validation | Catches hallucinations and unverified medical terms; adds one extra LLM call |
 | Streaming | Server-Sent Events (SSE) | Progressive token delivery to frontend; simpler than WebSockets for unidirectional flow |
 | Multimodal Input | Whisper (audio) + GPT-4o-mini vision (image) + PyMuPDF/python-docx (documents) | Decoupled `/transcribe` endpoint; no changes to RAG pipeline |
@@ -413,8 +472,8 @@ capstone/
 │   ├── Dockerfile
 │   ├── pyproject.toml
 │   ├── src/
-│   │   ├── agents/                 # 8 specialized analysis agents + registry
-│   │   ├── api/                    # FastAPI routes (/ask, /search, /analyze, /transcribe, /health)
+│   │   ├── agents/                 # 8 analysis agents + registry + ReviewSynthesizer + ReviewPipeline
+│   │   ├── api/                    # FastAPI routes (/ask, /search, /analyze, /review, /transcribe, /health)
 │   │   ├── guardrails/             # Input validation & output grounding checks
 │   │   ├── ingestion/              # Data loading, chunking, embedding, Milvus setup
 │   │   ├── retrieval/              # Hybrid search, query expansion, reranking
@@ -438,6 +497,7 @@ capstone/
 │       │   ├── FilterPanel.tsx     # Search mode, year, top_k filters
 │       │   ├── ResultsPanel.tsx    # Citations & search results display
 │       │   ├── AgentResultsPanel.tsx # Agent analysis cards with score badges
+│       │   ├── ReviewPanel.tsx     # Literature review display with collapsible agent details
 │       │   └── MessageBubble.tsx   # Chat message rendering (markdown-ready)
 │       ├── lib/api.ts              # API client (REST + SSE streaming)
 │       └── types/index.ts          # TypeScript type definitions
