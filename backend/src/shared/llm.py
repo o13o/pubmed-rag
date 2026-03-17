@@ -18,9 +18,10 @@ if os.environ.get("LANGFUSE_PUBLIC_KEY"):
 
 
 class LLMClient:
-    def __init__(self, model: str = "gpt-4o-mini", timeout: int = 30):
+    def __init__(self, model: str = "gpt-4o-mini", timeout: int = 30, num_retries: int = 3):
         self.model = model
         self.timeout = timeout
+        self.num_retries = num_retries
 
     def complete(self, system_prompt: str, user_prompt: str, temperature: float = 0.0) -> str:
         messages = [
@@ -33,6 +34,7 @@ class LLMClient:
             messages=messages,
             temperature=temperature,
             timeout=self.timeout,
+            num_retries=self.num_retries,
         )
 
         result = response.choices[0].message.content
@@ -54,6 +56,7 @@ class LLMClient:
             messages=messages,
             temperature=temperature,
             timeout=self.timeout,
+            num_retries=self.num_retries,
             stream=True,
             stream_options={"include_usage": True},
         )

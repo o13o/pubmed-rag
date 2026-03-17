@@ -22,6 +22,48 @@ def test_llm_client_complete():
     assert len(call_kwargs["messages"]) == 2
 
 
+def test_llm_client_passes_num_retries():
+    with patch("src.shared.llm.litellm.completion") as mock_completion:
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock(message=MagicMock(content="ok"))]
+        mock_response.usage = MagicMock(total_tokens=10)
+        mock_completion.return_value = mock_response
+
+        client = LLMClient(model="gpt-4o-mini", num_retries=5)
+        client.complete(system_prompt="sys", user_prompt="usr")
+
+    call_kwargs = mock_completion.call_args[1]
+    assert call_kwargs["num_retries"] == 5
+
+
+def test_llm_client_default_num_retries():
+    with patch("src.shared.llm.litellm.completion") as mock_completion:
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock(message=MagicMock(content="ok"))]
+        mock_response.usage = MagicMock(total_tokens=10)
+        mock_completion.return_value = mock_response
+
+        client = LLMClient()
+        client.complete(system_prompt="sys", user_prompt="usr")
+
+    call_kwargs = mock_completion.call_args[1]
+    assert call_kwargs["num_retries"] == 3
+
+
+def test_llm_client_stream_passes_num_retries():
+    with patch("src.shared.llm.litellm.completion") as mock_completion:
+        chunk = MagicMock()
+        chunk.choices = [MagicMock(delta=MagicMock(content="ok"))]
+        chunk.usage = None
+        mock_completion.return_value = iter([chunk])
+
+        client = LLMClient(num_retries=2)
+        list(client.complete_stream(system_prompt="sys", user_prompt="usr"))
+
+    call_kwargs = mock_completion.call_args[1]
+    assert call_kwargs["num_retries"] == 2
+
+
 def test_llm_client_uses_configured_model():
     with patch("src.shared.llm.litellm.completion") as mock_completion:
         mock_response = MagicMock()
