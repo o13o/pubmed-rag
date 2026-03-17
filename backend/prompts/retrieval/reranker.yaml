@@ -1,0 +1,12 @@
+version: "1.0"
+description: "LLM-based pointwise reranker scoring prompt"
+
+system: "You rate document relevance. Return only a number 0-10."
+
+user_template: |
+  Rate the relevance of this abstract to the query on a scale of 0-10.
+  Return ONLY a single number.
+
+  Query: {query}
+  Abstract: {abstract}
+  Score:

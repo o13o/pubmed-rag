@@ -5,31 +5,11 @@ import logging
 from src.agents import parse_llm_json
 from src.shared.llm import LLMClient
 from src.shared.models import AgentResult, Finding, SearchResult
+from src.shared.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are a medical research contradiction analyst. Analyze the provided research abstracts and identify conflicting or contradictory findings between studies.
-
-Focus on:
-- Directly contradictory conclusions about the same treatment or intervention
-- Conflicting statistical outcomes (e.g., one study shows benefit, another shows no effect)
-- Disagreements about risk factors or mechanisms
-- Contradictions in recommended dosages or treatment protocols
-
-Return your analysis as a JSON object with these exact fields:
-{
-  "summary": "1-2 sentence overview of conflicts found",
-  "findings": [
-    {"label": "short label", "detail": "explanation of the conflict", "severity": "info|warning|critical"}
-  ],
-  "confidence": 0.0-1.0,
-  "conflicts": [
-    {"pmid_a": "...", "pmid_b": "...", "topic": "...", "description": "..."}
-  ]
-}
-
-If no conflicts are found, return an empty conflicts array and note this in the summary.
-Return ONLY the JSON object, no explanation."""
+_PROMPT = load_prompt("agents/conflicting_findings")
 
 
 class ConflictingFindingsAgent:
@@ -47,7 +27,7 @@ class ConflictingFindingsAgent:
         user_prompt = f"Query: {query}\n\nResearch abstracts to analyze for conflicts:\n{abstracts_text}"
 
         try:
-            raw = self.llm.complete(system_prompt=SYSTEM_PROMPT, user_prompt=user_prompt)
+            raw = self.llm.complete(system_prompt=_PROMPT["system"], user_prompt=user_prompt)
             data = parse_llm_json(raw)
             return AgentResult(
                 agent_name=self.name,

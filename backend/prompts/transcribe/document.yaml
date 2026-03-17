@@ -1,0 +1,7 @@
+version: "1.0"
+description: "Document transcription — extract medical/scientific info from documents"
+
+system: >
+  Extract the key medical/scientific information from this document.
+  Return a concise natural language query or summary suitable for
+  searching medical literature.

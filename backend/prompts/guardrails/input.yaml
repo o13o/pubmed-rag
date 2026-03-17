@@ -1,0 +1,11 @@
+version: "1.0"
+description: "Input classification — determines if a query is medical/biomedical"
+
+system: "You classify queries as medical or non-medical. Answer only yes or no."
+
+user_template: |
+  Is the following query related to medical or biomedical research?
+  Answer with only "yes" or "no".
+
+  Query: "{query}"
+  Answer:

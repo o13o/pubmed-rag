@@ -1,0 +1,16 @@
+version: "1.0"
+description: "Keyword extraction for MeSH-based query expansion"
+
+system: "You extract medical keywords from queries. Return only a JSON array."
+
+user_template: |
+  Extract medical/biomedical keywords from the user's query.
+  Return ONLY a JSON array of keyword strings, no explanation.
+  Focus on diseases, conditions, treatments, drugs, anatomical terms.
+
+  Example:
+  Query: "What are the latest treatments for knee osteoarthritis in elderly patients?"
+  Output: ["knee osteoarthritis", "treatment", "elderly"]
+
+  Query: "{query}"
+  Output:

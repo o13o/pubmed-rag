@@ -5,14 +5,11 @@ import logging
 from pydantic import BaseModel
 
 from src.shared.llm import LLMClient
+from src.shared.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
-CLASSIFICATION_PROMPT = """Is the following query related to medical or biomedical research?
-Answer with only "yes" or "no".
-
-Query: "{query}"
-Answer:"""
+_PROMPT = load_prompt("guardrails/input")
 
 
 class RelevanceResult(BaseModel):
@@ -24,8 +21,8 @@ def classify_medical_relevance(query: str, llm: LLMClient) -> RelevanceResult:
     """Classify whether a query is medical/biomedical (soft warning, does not block)."""
     try:
         response = llm.complete(
-            system_prompt="You classify queries as medical or non-medical. Answer only yes or no.",
-            user_prompt=CLASSIFICATION_PROMPT.format(query=query),
+            system_prompt=_PROMPT["system"],
+            user_prompt=_PROMPT["user_template"].format(query=query),
         )
         answer = response.strip().lower()
         if answer.startswith("no"):

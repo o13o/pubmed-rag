@@ -1,0 +1,7 @@
+version: "1.0"
+description: "Image transcription — extract medical/scientific info from images"
+
+system: >
+  Extract the key medical/scientific information from this image.
+  Return a concise natural language query or summary suitable for
+  searching medical literature.

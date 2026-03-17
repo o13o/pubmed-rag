@@ -13,19 +13,11 @@ from pydantic import BaseModel, Field
 
 from src.shared.llm import LLMClient
 from src.shared.mesh_db import MeSHDatabase
+from src.shared.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
-KEYWORD_EXTRACTION_PROMPT = """Extract medical/biomedical keywords from the user's query.
-Return ONLY a JSON array of keyword strings, no explanation.
-Focus on diseases, conditions, treatments, drugs, anatomical terms.
-
-Example:
-Query: "What are the latest treatments for knee osteoarthritis in elderly patients?"
-Output: ["knee osteoarthritis", "treatment", "elderly"]
-
-Query: "{query}"
-Output:"""
+_PROMPT = load_prompt("retrieval/query_expander")
 
 
 class ExpandedQuery(BaseModel):
@@ -47,9 +39,9 @@ class QueryExpander:
 
     def _extract_keywords(self, query: str) -> list[str]:
         """Use LLM to extract medical keywords from the query."""
-        prompt = KEYWORD_EXTRACTION_PROMPT.format(query=query)
+        prompt = _PROMPT["user_template"].format(query=query)
         response = self.llm.complete(
-            system_prompt="You extract medical keywords from queries. Return only a JSON array.",
+            system_prompt=_PROMPT["system"],
             user_prompt=prompt,
         )
         try:

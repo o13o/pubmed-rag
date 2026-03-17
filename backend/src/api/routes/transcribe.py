@@ -7,6 +7,8 @@ import logging
 from fastapi import APIRouter, HTTPException, UploadFile
 from pydantic import BaseModel
 
+from src.shared.prompt_loader import load_prompt
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -20,17 +22,8 @@ DOCUMENT_CONTENT_TYPES = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 }
 
-IMAGE_SYSTEM_PROMPT = (
-    "Extract the key medical/scientific information from this image. "
-    "Return a concise natural language query or summary suitable for "
-    "searching medical literature."
-)
-
-DOCUMENT_SYSTEM_PROMPT = (
-    "Extract the key medical/scientific information from this document. "
-    "Return a concise natural language query or summary suitable for "
-    "searching medical literature."
-)
+_IMAGE_PROMPT = load_prompt("transcribe/image")
+_DOCUMENT_PROMPT = load_prompt("transcribe/document")
 
 
 class TranscribeResponse(BaseModel):
@@ -59,7 +52,7 @@ def _transcribe_image(file_bytes: bytes, content_type: str) -> str:
     result = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": IMAGE_SYSTEM_PROMPT},
+            {"role": "system", "content": _IMAGE_PROMPT["system"]},
             {
                 "role": "user",
                 "content": [
@@ -103,7 +96,7 @@ def _summarize_document(raw_text: str) -> str:
     result = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": DOCUMENT_SYSTEM_PROMPT},
+            {"role": "system", "content": _DOCUMENT_PROMPT["system"]},
             {"role": "user", "content": truncated},
         ],
         max_tokens=300,

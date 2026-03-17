@@ -7,6 +7,7 @@ import logging
 from typing import Protocol, runtime_checkable
 
 from src.shared.models import SearchResult
+from src.shared.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -60,12 +61,7 @@ class CrossEncoderReranker:
 class LLMReranker:
     """LLM-based pointwise reranker. Fallback when cross-encoder is unavailable."""
 
-    SCORING_PROMPT = """Rate the relevance of this abstract to the query on a scale of 0-10.
-Return ONLY a single number.
-
-Query: {query}
-Abstract: {abstract}
-Score:"""
+    _prompt = load_prompt("retrieval/reranker")
 
     def __init__(self, llm):
         self.llm = llm
@@ -78,8 +74,8 @@ Score:"""
         for r in results:
             try:
                 response = self.llm.complete(
-                    system_prompt="You rate document relevance. Return only a number 0-10.",
-                    user_prompt=self.SCORING_PROMPT.format(query=query, abstract=r.abstract_text),
+                    system_prompt=self._prompt["system"],
+                    user_prompt=self._prompt["user_template"].format(query=query, abstract=r.abstract_text),
                 )
                 score = float(response.strip())
             except (ValueError, Exception) as e:

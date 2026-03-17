@@ -12,28 +12,12 @@ from src.shared.models import (
     SearchResult,
     ValidatedResponse,
 )
+from src.shared.prompt_loader import load_prompt
 
 logger = logging.getLogger(__name__)
 
-MEDICAL_DISCLAIMER = (
-    "Disclaimer: This information is generated from research abstracts and is intended "
-    "for educational purposes only. It does not constitute medical advice. Always consult "
-    "a qualified healthcare professional for medical decisions."
-)
-
-VALIDATION_SYSTEM_PROMPT = """You are a medical content validator. Given an answer and its source abstracts, check for:
-1. Citation grounding: Is each claim in the answer supported by a cited abstract?
-2. Hallucination: Are there facts (drug names, statistics, outcomes) not found in source material?
-3. Treatment recommendations: Are there definitive treatment recommendations without hedging language?
-
-Return a JSON array of issues. Each issue has: check, severity, message, span.
-- check: "citation_grounding" | "hallucination" | "treatment_recommendation"
-- severity: "error" for ungrounded claims, "warning" for others
-- message: brief description
-- span: the problematic text from the answer
-
-If no issues found, return an empty array: []
-Return ONLY the JSON array, no explanation."""
+_PROMPT = load_prompt("guardrails/output")
+MEDICAL_DISCLAIMER = _PROMPT["disclaimer"]
 
 
 class GuardrailValidator:
@@ -68,7 +52,7 @@ class GuardrailValidator:
             citations=response.citations,
             query=response.query,
             warnings=warnings,
-            disclaimer=MEDICAL_DISCLAIMER,
+            disclaimer=_PROMPT["disclaimer"],
             is_grounded=not has_grounding_errors,
         )
 
@@ -91,7 +75,7 @@ Check the answer against the source abstracts and return a JSON array of issues.
 
         try:
             result = self.llm.complete(
-                system_prompt=VALIDATION_SYSTEM_PROMPT,
+                system_prompt=_PROMPT["system"],
                 user_prompt=user_prompt,
             )
             issues = json.loads(result.strip())
