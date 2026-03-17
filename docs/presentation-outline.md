@@ -19,6 +19,8 @@
 - "PubMed RAG: AI-Powered Medical Research Retrieval & Analysis"
 - Name, date
 
+---
+
 ### Slide 2: Problem Statement (1 min 15 sec)
 
 - PubMed: 36M+ articles, 1M+ added per year
@@ -27,6 +29,8 @@
   - Quality assessment (methodology, statistics, clinical applicability) is manual and time-consuming
   - Modern workflows involve multimodal inputs (voice notes, images, documents)
 - Concrete example: "Latest treatments for early-stage pancreatic cancer" — what happens with keyword search?
+
+---
 
 ### Slide 3: Our Approach (1 min 30 sec)
 
@@ -96,6 +100,8 @@
 - Now that we've seen the demo, walk through the architecture connecting what was shown to the components
 - Infrastructure: Docker Compose (5 services: etcd + MinIO + Milvus + Backend + Frontend)
 
+---
+
 ### Slide 6: Design Decision — Hybrid Search (1 min 30 sec)
 
 - Problem: Dense-only misses exact medical terms; BM25-only misses semantic similarity
@@ -106,6 +112,8 @@
   - Expanded query sent to hybrid search
 - Trade-off: Latency increase (~2x) justified by recall improvement
 - Reference: ADR-0007 (Hybrid Retrieval), ADR-0010 (MeSH Query Expansion)
+
+---
 
 ### Slide 7: Design Decision — 8 Agents + Protocol DI (1 min)
 
@@ -126,6 +134,8 @@
   - Enables: easy testing (mock injection), Monolith <-> Microservice switch
 - Reference: ADR-0003, ADR-0005
 
+---
+
 ### Slide 8: Design Decision — Guardrails + Prompt Management (1 min)
 
 - Input guardrail: LLM-as-judge medical relevance classification (soft warning, non-blocking)
@@ -138,6 +148,8 @@
 - Prompt externalization: 16 YAML templates (agents x9, guardrails x2, retrieval x2, RAG x1, transcribe x2)
   - Change prompts without code changes
   - Version-controllable, reviewable
+
+---
 
 ### Slide 9: Evaluation & Quality (1 min)
 
@@ -153,16 +165,20 @@
   - 5 design specs
 - Observability: LangFuse integration for token tracking, cost analysis, latency monitoring
 
+---
+
 ### Slide 10: Scope Decisions & Future Work (30 sec)
 
-- Intentionally out of scope (Advanced/Nice-to-have):
+- Scope decisions:
   - Full-text retrieval handoff -> abstract-level search is the validated core
   - Full PubMed corpus (36M+) -> 100k stratified sample sufficient for PoC (ADR-0002)
-- Delivered beyond initial scope:
-  - A2A agent pipeline (ReviewPipeline: search → 6 parallel agents → synthesis)
-  - Automated literature review generation (/review endpoint)
-  - Multimodal input (audio/image/document via /transcribe)
-- Message: Delivered core + advanced features with focus on quality
+- Future work:
+  - Full-text article retrieval via PubMed Central API
+  - Scale to full corpus (pipeline is designed for it — change `n_max` config)
+  - Circuit breaker + local LLM fallback for offline resilience
+- Message: Scope was bounded intentionally; architecture supports growth
+
+---
 
 ### Slide 11: Summary (30 sec)
 
