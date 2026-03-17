@@ -16,7 +16,7 @@ set -euo pipefail
 # ============================================================
 
 ORIGIN_URL="https://github.com/o13o/fde-training.git"
-TARGET_DIR="$HOME/pubmed-rag"
+TARGET_DIR="$HOME/0/pubmed-rag"
 TEMP_DIR=$(mktemp -d)
 BRANCH="main"
 

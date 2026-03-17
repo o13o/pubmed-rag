@@ -21,16 +21,16 @@ A migration script is provided at `capstone/scripts/migrate-repo.sh`. Run it fro
 1. **Fresh clone** — Clones `fde-training` into a temp directory (avoids touching your working copy)
 2. **Extract capstone/** — `git filter-repo --subdirectory-filter capstone` rewrites history to only include commits touching `capstone/`, and removes the `capstone/` prefix from all paths
 3. **Fix .gitignore** — The root `.gitignore` in `fde-training` has broad rules (e.g. `*.json`, `*.csv`) that are specific to the training repo. The script generates a clean `.gitignore` suited for the standalone project
-4. **Output** — A ready-to-push local repo at `~/pubmed-rag`
+4. **Output** — A ready-to-push local repo at `~/0/pubmed-rag`
 
 ## Post-Script Manual Steps
 
 1. **Create the GitHub repo**
 
    ```bash
-   gh repo create o13o/pubmed-rag --public --source ~/pubmed-rag --push
+   gh repo create o13o/pubmed-rag --public --source ~/0/pubmed-rag --push
    # or create via github.com UI, then:
-   cd ~/pubmed-rag
+   cd ~/0/pubmed-rag
    git remote add origin git@github.com:o13o/pubmed-rag.git
    git push -u origin main
    ```
@@ -40,9 +40,9 @@ A migration script is provided at `capstone/scripts/migrate-repo.sh`. Run it fro
    - Check that paths no longer have `capstone/` prefix
    - `backend/`, `frontend/`, `loadtest/`, `docs/` should be at the root
 
-3. **Update fde-training** (optional)
-   - Remove `capstone/` directory from `fde-training`
-   - Add a note in `fde-training` README pointing to the new repo
+3. **fde-training の扱い**
+   - コードはそのまま残す（削除不要）
+   - 必要に応じて README に新リポジトリへの参照を追記
 
 ## Directory Structure After Migration
 
