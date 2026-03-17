@@ -3,11 +3,13 @@ import { ChatPanel } from "./components/ChatPanel";
 import { FilterPanel } from "./components/FilterPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
 import { AgentResultsPanel } from "./components/AgentResultsPanel";
-import { analyzeQuery, askQueryStream, searchQuery } from "./lib/api";
+import { ReviewPanel } from "./components/ReviewPanel";
+import { analyzeQuery, askQueryStream, reviewQuery, searchQuery } from "./lib/api";
 import type {
   AgentResult,
   Citation,
   Filters,
+  LiteratureReview,
   Message,
   Mode,
   SearchResult,
@@ -37,6 +39,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [agentResults, setAgentResults] = useState<AgentResult[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
+  const [reviewResult, setReviewResult] = useState<LiteratureReview | null>(null);
+  const [reviewing, setReviewing] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const dragging = useRef(false);
@@ -76,6 +80,8 @@ function App() {
     setAgentResults([]);
     setLoading(false);
     setAnalyzing(false);
+    setReviewResult(null);
+    setReviewing(false);
   };
 
   const handleSend = async (query: string) => {
@@ -87,6 +93,7 @@ function App() {
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
     setAgentResults([]);
+    setReviewResult(null);
 
     try {
       if (mode === "ask") {
@@ -244,6 +251,35 @@ function App() {
     }
   };
 
+  const handleReview = async () => {
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    const query = lastUserMsg?.content ?? "";
+    if (!query) return;
+
+    setReviewing(true);
+    setReviewResult(null);
+
+    try {
+      const result = await reviewQuery({
+        query,
+        year_min: filters.year_min,
+        year_max: filters.year_max,
+        top_k: filters.top_k,
+        search_mode: filters.search_mode,
+      });
+      setReviewResult(result);
+    } catch (err) {
+      const errorMsg: Message = {
+        id: crypto.randomUUID(),
+        role: "error",
+        content: err instanceof Error ? err.message : "Review generation failed",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setReviewing(false);
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-950 text-gray-100">
       <header className="border-b border-gray-800 px-6 py-2 flex-shrink-0">
@@ -287,6 +323,16 @@ function App() {
               {analyzing ? "Analyzing..." : "Analyze with Agents"}
             </button>
           )}
+          {(searchResults.length > 0 || citations.length > 0) && (
+            <button
+              onClick={handleReview}
+              disabled={reviewing}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-700 disabled:text-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              {reviewing ? "Generating Review..." : "Generate Literature Review"}
+            </button>
+          )}
+          <ReviewPanel review={reviewResult} loading={reviewing} />
           <AgentResultsPanel agentResults={agentResults} loading={analyzing} totalAgents={AGENT_NAMES.length} />
           <ResultsPanel
             citations={citations}
