@@ -52,6 +52,7 @@ def test_all_prompt_files_loadable():
         "agents/conflicting_findings",
         "agents/trend_analysis",
         "agents/knowledge_graph",
+        "agents/review_synthesizer",
     ]
     for name in names:
         data = load_prompt(name)
