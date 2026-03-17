@@ -1,7 +1,7 @@
 """Tests for ReviewPipeline — 3-stage A2A handoff."""
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from src.shared.models import AgentResult, Finding, LiteratureReview, SearchFilters, SearchResult
 
