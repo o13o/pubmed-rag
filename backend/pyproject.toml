@@ -17,6 +17,7 @@ dependencies = [
     "uvicorn[standard]>=0.34",
     "python-multipart>=0.0.20",
     "pyarrow>=15.0",
+    "python-json-logger>=3.0",
 ]
 
 [project.optional-dependencies]
