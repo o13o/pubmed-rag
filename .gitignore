@@ -33,6 +33,7 @@ node_modules/
 .idea/
 .vscode/
 *.swp
+.claude/
 
 # OS
 .DS_Store
