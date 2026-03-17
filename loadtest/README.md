@@ -1,48 +1,35 @@
-# Load Testing — Locust
+# Load Testing
 
-Performance testing for the PubMed RAG API.
+Performance and scalability testing for the PubMed RAG system.
 
-## Setup
+## Structure
 
-```bash
-pip install locust
+```
+loadtest/
+├── api/          # HTTP API load test (Locust)
+│   └── README.md
+├── milvus/       # Milvus direct search load test (Locust)
+│   └── README.md
+└── README.md     # This file
 ```
 
-## Usage
+## Tests
 
-### Web UI mode
+| Directory | Target | Dependencies |
+|-----------|--------|--------------|
+| `api/` | FastAPI endpoints (`/search`, `/ask`, `/analyze`) | Running backend, OpenAI API key |
+| `milvus/` | Milvus search engine directly (pymilvus) | Running Milvus with ingested data |
 
-```bash
-cd capstone/loadtest
-locust
-```
-
-Open http://localhost:8089, set host to `http://localhost:8000`, configure users and ramp-up.
-
-### Headless mode
+## Quick Start
 
 ```bash
-# 10 concurrent users, ramp 2 users/sec, run for 60 seconds
-locust --headless -u 10 -r 2 -t 60s --host http://localhost:8000
+pip install locust numpy pymilvus
 
-# Light load (search only)
-locust --headless -u 5 -r 1 -t 30s --host http://localhost:8000
+# API load test
+cd loadtest/api && locust
+
+# Milvus load test
+cd loadtest/milvus && locust
 ```
 
-## Test Scenarios
-
-| Endpoint | Weight | Description |
-|----------|--------|-------------|
-| `GET /health` | 5 | Lightweight health check |
-| `POST /search` | 10 | Vector search (dense/hybrid, no LLM) |
-| `POST /search` (filtered) | 3 | Search with year filter |
-| `POST /ask` | 2 | Full RAG pipeline (LLM call) |
-| `POST /analyze` | 1 | Multi-agent analysis (multiple LLM calls) |
-
-Weights reflect realistic usage: search-heavy with occasional RAG and rare agent analysis.
-
-## Prerequisites
-
-- Backend running on `http://localhost:8000`
-- Milvus running with ingested data
-- `OPENAI_API_KEY` set (for `/ask` and `/analyze` tasks)
+See each subdirectory's README for detailed usage.
