@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageBubble } from "./MessageBubble";
+import { StreamingIndicator } from "./StreamingIndicator";
 import { transcribeFile } from "../lib/api";
 import type { Message } from "../types";
 
 interface Props {
   messages: Message[];
   loading: boolean;
+  streamStage: string | null;
   onSend: (query: string) => void;
 }
 
-export function ChatPanel({ messages, loading, onSend }: Props) {
+export function ChatPanel({ messages, loading, streamStage, onSend }: Props) {
   const [input, setInput] = useState("");
   const [transcribing, setTranscribing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -17,7 +19,7 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [messages]);
+  }, [messages, streamStage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +49,10 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
 
   const isDisabled = loading || transcribing;
 
+  // Show streaming indicator when loading and no content has arrived yet in the assistant bubble
+  const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+  const showIndicator = loading && lastMsg?.role === "assistant" && !lastMsg.content;
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-2 space-y-2">
@@ -58,12 +64,8 @@ export function ChatPanel({ messages, loading, onSend }: Props) {
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
-        {loading && messages.length > 0 && messages[messages.length - 1].role !== "assistant" && (
-          <div className="flex justify-start mb-4">
-            <div className="bg-gray-800 text-gray-400 rounded-lg px-4 py-2">
-              Thinking...
-            </div>
-          </div>
+        {showIndicator && (
+          <StreamingIndicator stage={streamStage} />
         )}
         <div ref={messagesEndRef} />
       </div>

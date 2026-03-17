@@ -129,13 +129,19 @@ def test_ask_stream_yields_token_and_done_events(mock_expander_cls):
         guardrails_enabled=True,
     ))
 
-    # Should have 1 citations + 2 token + 1 done event
     event_types = [e["event"] for e in events]
+    status_events = [e for e in events if e["event"] == "status"]
     citations_events = [e for e in events if e["event"] == "citations"]
     token_events = [e for e in events if e["event"] == "token"]
     done_events = [e for e in events if e["event"] == "done"]
 
-    # citations event must come before first token
+    # Status events: 5 stages in order
+    assert len(status_events) == 5
+    stages = [e["data"]["stage"] for e in status_events]
+    assert stages == ["expanding", "searching", "reranking", "generating", "validating"]
+
+    # Status events come before citations/token events
+    assert event_types.index("status") < event_types.index("citations")
     assert event_types.index("citations") < event_types.index("token")
 
     # citations event contents
@@ -204,6 +210,6 @@ def test_ask_stream_yields_error_on_exception(mock_expander_cls):
         mesh_db=MagicMock(),
     ))
 
-    assert len(events) == 1
-    assert events[0]["event"] == "error"
-    assert "Milvus connection lost" in events[0]["data"]["message"]
+    error_events = [e for e in events if e["event"] == "error"]
+    assert len(error_events) == 1
+    assert "Milvus connection lost" in error_events[0]["data"]["message"]

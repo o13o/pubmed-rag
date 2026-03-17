@@ -118,15 +118,18 @@ def ask_stream(
             reranker = NoOpReranker()
 
         # 1. Query expansion
+        yield {"event": "status", "data": {"stage": "expanding"}}
         expander = QueryExpander(llm=llm, mesh_db=mesh_db)
         expanded = expander.expand(query)
         logger.info("Expanded query: '%s' → '%s'", query, expanded.expanded_query)
 
         # 2. Search
+        yield {"event": "status", "data": {"stage": "searching"}}
         results = search_client.search(expanded.expanded_query, filters)
         logger.info("Retrieved %d results", len(results))
 
         # 3. Rerank
+        yield {"event": "status", "data": {"stage": "reranking"}}
         results = reranker.rerank(query, results, top_k=filters.top_k)
         logger.info("After reranking: %d results", len(results))
 
@@ -154,6 +157,7 @@ def ask_stream(
         user_prompt = build_user_prompt(query, results)
 
         # 5. Stream LLM tokens
+        yield {"event": "status", "data": {"stage": "generating"}}
         full_answer = ""
         for chunk in llm.complete_stream(system_prompt=system_prompt, user_prompt=user_prompt):
             full_answer += chunk
@@ -165,6 +169,7 @@ def ask_stream(
         is_grounded = True
 
         if guardrails_enabled:
+            yield {"event": "status", "data": {"stage": "validating"}}
             if guardrail_client is None:
                 guardrail_client = LocalGuardrailClient(llm=llm, mesh_db=mesh_db)
             rag_response = RAGResponse(answer=full_answer, citations=citations, query=query)

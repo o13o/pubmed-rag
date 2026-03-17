@@ -41,14 +41,19 @@ export async function searchQuery(
   return res.json();
 }
 
-export async function askQueryStream(
-  req: AskRequest & { stream: true },
-  onToken: (text: string) => void,
-  onDone: (data: SSEDoneEvent) => void,
-  onError: (error: Error) => void,
-  signal?: AbortSignal,
-  onCitations?: (data: { citations: Citation[]; search_results?: SearchResult[] }) => void,
-): Promise<void> {
+export interface AskStreamOptions {
+  req: AskRequest & { stream: true };
+  onToken: (text: string) => void;
+  onDone: (data: SSEDoneEvent) => void;
+  onError: (error: Error) => void;
+  signal?: AbortSignal;
+  onCitations?: (data: { citations: Citation[]; search_results?: SearchResult[] }) => void;
+  onStatus?: (stage: string) => void;
+}
+
+export async function askQueryStream(opts: AskStreamOptions): Promise<void> {
+  const { req, onToken, onDone, onError, signal, onCitations, onStatus } = opts;
+
   let res: Response;
   try {
     res = await fetch(`${API_BASE}/ask`, {
@@ -100,10 +105,10 @@ export async function askQueryStream(
           }
           if (currentEvent === "token") {
             onToken((data as { text: string }).text);
+          } else if (currentEvent === "status") {
+            onStatus?.((data as { stage: string }).stage);
           } else if (currentEvent === "citations") {
-            if (onCitations) {
-              onCitations(data as { citations: Citation[]; search_results?: SearchResult[] });
-            }
+            onCitations?.(data as { citations: Citation[]; search_results?: SearchResult[] });
           } else if (currentEvent === "done") {
             onDone(data as SSEDoneEvent);
           } else if (currentEvent === "error") {

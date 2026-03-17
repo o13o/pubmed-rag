@@ -50,6 +50,8 @@ def test_ask_requires_query(client):
 @patch("src.api.routes.ask.ask_stream")
 def test_ask_stream_returns_sse(mock_ask_stream, client):
     mock_ask_stream.return_value = iter([
+        {"event": "status", "data": {"stage": "searching"}},
+        {"event": "status", "data": {"stage": "generating"}},
         {"event": "token", "data": {"text": "Hello"}},
         {"event": "token", "data": {"text": " world"}},
         {"event": "done", "data": {
@@ -65,6 +67,7 @@ def test_ask_stream_returns_sse(mock_ask_stream, client):
     assert response.headers["content-type"].startswith("text/event-stream")
 
     body = response.text
+    assert "event: status" in body
     assert "event: token" in body
     assert '"text": "Hello"' in body or '"text":"Hello"' in body
     assert "event: done" in body

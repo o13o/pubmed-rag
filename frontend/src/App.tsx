@@ -13,7 +13,6 @@ import type {
   Message,
   Mode,
   SearchResult,
-  SSEDoneEvent,
 } from "./types";
 
 const AGENT_NAMES = [
@@ -37,6 +36,7 @@ function App() {
   const [citations, setCitations] = useState<Citation[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [streamStage, setStreamStage] = useState<string | null>(null);
   const [agentResults, setAgentResults] = useState<AgentResult[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [reviewResult, setReviewResult] = useState<LiteratureReview | null>(null);
@@ -79,6 +79,7 @@ function App() {
     setSearchResults([]);
     setAgentResults([]);
     setLoading(false);
+    setStreamStage(null);
     setAnalyzing(false);
     setReviewResult(null);
     setReviewing(false);
@@ -92,6 +93,7 @@ function App() {
     };
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
+    setStreamStage(null);
     setAgentResults([]);
     setReviewResult(null);
 
@@ -107,8 +109,8 @@ function App() {
 
         abortRef.current = new AbortController();
 
-        await askQueryStream(
-          {
+        await askQueryStream({
+          req: {
             query,
             year_min: filters.year_min,
             year_max: filters.year_max,
@@ -116,8 +118,7 @@ function App() {
             search_mode: filters.search_mode,
             stream: true,
           },
-          // onToken
-          (text: string) => {
+          onToken: (text) => {
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId
@@ -126,8 +127,7 @@ function App() {
               ),
             );
           },
-          // onDone
-          (data: SSEDoneEvent) => {
+          onDone: (data) => {
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId
@@ -142,9 +142,9 @@ function App() {
             );
             setCitations(data.citations);
             setLoading(false);
+            setStreamStage(null);
           },
-          // onError
-          (error: Error) => {
+          onError: (error) => {
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId
@@ -153,16 +153,19 @@ function App() {
               ),
             );
             setLoading(false);
+            setStreamStage(null);
           },
-          abortRef.current.signal,
-          // onCitations — display results immediately before LLM starts
-          ({ citations: earlyCitations, search_results }) => {
+          signal: abortRef.current.signal,
+          onCitations: ({ citations: earlyCitations, search_results }) => {
             setCitations(earlyCitations);
             if (search_results) {
               setSearchResults(search_results);
             }
           },
-        );
+          onStatus: (stage) => {
+            setStreamStage(stage);
+          },
+        });
       } else {
         const res = await searchQuery({
           query,
@@ -189,6 +192,7 @@ function App() {
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setLoading(false);
+      setStreamStage(null);
       abortRef.current = null;
     }
   };
@@ -295,6 +299,7 @@ function App() {
           <ChatPanel
             messages={messages}
             loading={loading}
+            streamStage={streamStage}
             onSend={handleSend}
           />
           <FilterPanel
