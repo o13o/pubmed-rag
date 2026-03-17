@@ -9,8 +9,8 @@ An AI-powered multimodal medical research retrieval and analysis system that all
 **Data flow:**
 
 ```
-Multimodal Input (text / voice / image)
-  → [voice/image] POST /transcribe → text (Whisper / GPT-4o-mini vision)
+Multimodal Input (text / voice / image / document)
+  → [voice/image/doc] POST /transcribe → text (Whisper / GPT-4o-mini / PyMuPDF / python-docx)
   → User reviews transcribed text
 
 Text Query (typed or transcribed)
@@ -146,7 +146,7 @@ UI available at `http://localhost:5173`.
 | `POST` | `/ask` | Full RAG pipeline (supports SSE streaming via `stream: true`) |
 | `POST` | `/search` | Semantic/hybrid search with metadata filtering |
 | `POST` | `/analyze` | Multi-agent research analysis |
-| `POST` | `/transcribe` | Convert audio/image to text (Whisper / GPT-4o-mini vision) |
+| `POST` | `/transcribe` | Convert audio/image/document to text (Whisper / GPT-4o-mini / PyMuPDF / python-docx) |
 
 ### Example: Ask (RAG Pipeline)
 
@@ -238,6 +238,14 @@ curl -X POST http://localhost:8000/transcribe \
 # Image file (research figure)
 curl -X POST http://localhost:8000/transcribe \
   -F "file=@figure.png"
+
+# PDF document (research paper)
+curl -X POST http://localhost:8000/transcribe \
+  -F "file=@paper.pdf"
+
+# Text file (clinical notes)
+curl -X POST http://localhost:8000/transcribe \
+  -F "file=@notes.txt"
 ```
 
 Response:
@@ -249,7 +257,18 @@ Response:
 }
 ```
 
+For documents (PDF/TXT/DOCX), the extracted text is summarized by LLM into a concise search query:
+
+```json
+{
+  "text": "FOLFIRINOX neoadjuvant therapy resectable pancreatic cancer survival outcomes",
+  "media_type": "document"
+}
+```
+
 The returned text can then be used as input to `/ask` or `/search`. In the frontend, the transcribed text is automatically populated in the chat input for the user to review and submit.
+
+**Document limits:** 10MB file size, 10,000 character text extraction limit before LLM summarization.
 
 ### CLI Usage
 
@@ -385,7 +404,7 @@ To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LAN
 | Agent Design | Independent agents, no inter-agent communication | Simple, testable, parallelizable; orchestration can be added later |
 | Guardrails | LLM-based grounding check + MeSH term validation | Catches hallucinations and unverified medical terms; adds one extra LLM call |
 | Streaming | Server-Sent Events (SSE) | Progressive token delivery to frontend; simpler than WebSockets for unidirectional flow |
-| Multimodal Input | Whisper (audio) + GPT-4o-mini vision (image) | Decoupled `/transcribe` endpoint; no changes to RAG pipeline |
+| Multimodal Input | Whisper (audio) + GPT-4o-mini vision (image) + PyMuPDF/python-docx (documents) | Decoupled `/transcribe` endpoint; no changes to RAG pipeline |
 | Deployment | Modular monolith with Protocol-based abstraction | Single deploy for PoC; can split into microservices via env var switch (ADR-0003) |
 
 ## Project Structure

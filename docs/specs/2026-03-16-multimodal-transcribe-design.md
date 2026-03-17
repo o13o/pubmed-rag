@@ -16,7 +16,7 @@ Add a single `POST /transcribe` endpoint that converts audio and image files to 
 
 - **Audio** (voice recordings, .mp3, .wav, .m4a, .webm) — OpenAI Whisper API
 - **Image** (research figures, screenshots, .png, .jpg, .webp) — GPT-4o-mini vision
-- **PDF** — out of scope for this iteration
+- **PDF/TXT/DOCX** — added in 2026-03-17, see `docs/specs/2026-03-17-document-upload-design.md`
 
 ## Architecture
 

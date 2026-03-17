@@ -12,10 +12,10 @@ The architectural question is whether multimodal processing should be integrated
 
 ## Decision
 
-Implement a **decoupled `/transcribe` endpoint** that converts non-text inputs (audio, image) to text. The transcribed text is returned to the frontend, where the user reviews it before submitting as a regular text query to `/ask` or `/search`.
+Implement a **decoupled `/transcribe` endpoint** that converts non-text inputs (audio, image, documents) to text. The transcribed text is returned to the frontend, where the user reviews it before submitting as a regular text query to `/ask` or `/search`.
 
 ```
-Audio/Image → POST /transcribe → { text, media_type } → User reviews → POST /ask
+Audio/Image/Document → POST /transcribe → { text, media_type } → User reviews → POST /ask
 ```
 
 The RAG pipeline (`/ask`, `/search`) remains text-only. Multimodal understanding is handled entirely at the input boundary.
@@ -27,6 +27,9 @@ The RAG pipeline (`/ask`, `/search`) remains text-only. Multimodal understanding
 | Text | Direct input | — | Primary input method |
 | Audio | Speech-to-text | OpenAI Whisper (`whisper-1`) | Voice recordings of research questions |
 | Image | Vision-to-text | GPT-4o-mini (vision) | Screenshots of research figures, clinical notes |
+| PDF | Text extraction + summarization | PyMuPDF + GPT-4o-mini | Research papers, clinical reports |
+| TXT | UTF-8 decode + summarization | GPT-4o-mini | Clinical notes, plain text |
+| DOCX | Text extraction + summarization | python-docx + GPT-4o-mini | Word documents, clinical protocols |
 
 ### Audio Processing
 
@@ -77,7 +80,7 @@ User reviews text → POST /ask { query: "..." }
 `ChatPanel.tsx`:
 
 1. User clicks the attachment button (paperclip icon)
-2. File picker opens with `accept="audio/*,image/*"`
+2. File picker opens with `accept="audio/*,image/*,.pdf,.txt,.doc,.docx"`
 3. Selected file is POSTed to `/transcribe`
 4. While transcribing, a spinner shows on the attachment button and the input says "Transcribing..."
 5. On success, transcribed text populates the chat input field
@@ -86,15 +89,21 @@ User reviews text → POST /ask { query: "..." }
 
 This two-step flow is explicit: the user always sees what the system "heard" before searching.
 
-## Not Implemented: Document Upload (PDF/DOCX)
+## Document Upload (PDF/TXT/DOCX)
 
-The requirements mention "uploaded research documents" as an input modality. This is not implemented in the current version. The `/transcribe` endpoint is designed to be extensible — adding PDF support would involve:
+Added in 2026-03-17. The `/transcribe` endpoint now also accepts document files:
 
-1. Accept `application/pdf` MIME type in the endpoint
-2. Extract text via a library (e.g., `pymupdf`, `pdfplumber`)
-3. Return extracted text for user review
+| Input Type | Processing | Model | Use Case |
+|------------|-----------|-------|----------|
+| PDF | Text extraction via PyMuPDF | GPT-4o-mini (summarization) | Research papers, clinical reports |
+| TXT | UTF-8 decode | GPT-4o-mini (summarization) | Clinical notes, plain text |
+| DOCX | Text extraction via python-docx | GPT-4o-mini (summarization) | Word documents, clinical protocols |
 
-This was deferred because audio and image cover the "multimodal" demonstration requirement, and PDF text extraction is a well-understood problem that can be added without architectural changes.
+Documents have separate limits from audio/image:
+- **File size**: 10MB (vs 25MB for audio/image)
+- **Extracted text**: Truncated to 10,000 characters before LLM summarization
+
+The flow is the same as image: extract text → LLM generates a concise search query → user reviews in chat input → submits to `/ask`. See `docs/specs/2026-03-17-document-upload-design.md` for the full spec.
 
 ## Consequences
 
@@ -110,4 +119,4 @@ This was deferred because audio and image cover the "multimodal" demonstration r
 - Two-step UX (transcribe → review → search) adds friction compared to a single "upload and search" flow
 - Depends on external APIs (OpenAI Whisper, GPT-4o-mini) — adds cost and latency for multimodal queries
 - Image interpretation is approximate — GPT-4o-mini may not capture all details from complex research figures
-- PDF/document upload is not yet supported
+- Document upload (PDF/TXT/DOCX) uses LLM summarization which adds latency and cost for long documents

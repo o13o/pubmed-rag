@@ -21,10 +21,12 @@ flowchart TD
     USER["User Query\n(text)"]
     AUDIO["Voice Input\n(audio)"]
     IMAGE["Image Input\n(research figure)"]
-    TRANSCRIBE["POST /transcribe\nWhisper · GPT-4o-mini vision"]
+    DOC["Document Input\n(PDF · TXT · DOCX)"]
+    TRANSCRIBE["POST /transcribe\nWhisper · GPT-4o-mini vision\nPyMuPDF · python-docx"]
 
     AUDIO --> TRANSCRIBE
     IMAGE --> TRANSCRIBE
+    DOC --> TRANSCRIBE
     TRANSCRIBE -->|transcribed text| USER
 
     %% ── Query & Retrieval ──
@@ -70,7 +72,7 @@ flowchart TD
         API_ASK["POST /ask\nRAG pipeline"]
         API_SEARCH["POST /search\nvector search"]
         API_ANALYZE["POST /analyze\nmulti-agent"]
-        API_TRANSCRIBE["POST /transcribe\naudio · image → text"]
+        API_TRANSCRIBE["POST /transcribe\naudio · image · doc → text"]
         API_HEALTH["GET /health"]
     end
 
@@ -137,7 +139,7 @@ flowchart TD
     class JSONL,LOADER,CHUNKER,EMBEDDER data
     class MILVUS,DENSE,BM25,SCALAR store
     class USER,QE,RERANK,SEARCH,S_DENSE,S_BM25 query
-    class AUDIO,IMAGE,TRANSCRIBE query
+    class AUDIO,IMAGE,DOC,TRANSCRIBE query
     class PROMPT,LLM rag
     class GUARD,G1,G2,G3,G4 guard
     class API,API_ASK,API_SEARCH,API_HEALTH,API_TRANSCRIBE api
