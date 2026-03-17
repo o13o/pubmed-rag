@@ -4,6 +4,8 @@ import type {
   AskRequest,
   AskResponse,
   Citation,
+  LiteratureReview,
+  ReviewRequest,
   SearchRequest,
   SearchResponse,
   SearchResult,
@@ -143,6 +145,21 @@ export async function transcribeFile(
   if (!res.ok) {
     const detail = await res.text();
     throw new Error(`Transcription failed: ${res.status} ${detail}`);
+  }
+  return res.json();
+}
+
+export async function reviewQuery(
+  req: ReviewRequest
+): Promise<LiteratureReview> {
+  const res = await fetch(`${API_BASE}/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Review failed: ${res.status} ${detail}`);
   }
   return res.json();
 }
