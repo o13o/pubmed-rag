@@ -4,6 +4,8 @@ An AI-powered multimodal medical research retrieval and analysis system that all
 
 ## Architecture
 
+> **Production scaling:** See [docs/production-architecture.md](docs/production-architecture.md) for POC vs Production comparison, Kubernetes deployment, and scaling to 36M+ abstracts.
+
 ![Architecture Diagram](docs/architecture.png)
 
 **Data flow:**
