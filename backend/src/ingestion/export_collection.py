@@ -95,7 +95,9 @@ def _batch_to_table(batch: list[dict]) -> pa.Table:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    from src.shared.logging_config import setup_logging
+
+    setup_logging()
     parser = argparse.ArgumentParser(description="Export Milvus collection to Parquet")
     parser.add_argument("--output", type=Path, default=Path("data/export/pubmed_abstracts.parquet"))
     parser.add_argument("--host", default="localhost")
@@ -103,7 +105,7 @@ def main() -> None:
     args = parser.parse_args()
 
     total = export_to_parquet(args.output, host=args.host, port=args.port)
-    print(f"Exported {total} records to {args.output}")
+    logger.info("Exported %d records to %s", total, args.output)
 
 
 if __name__ == "__main__":
