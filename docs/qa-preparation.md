@@ -134,7 +134,7 @@ NLM daily update files (.xml.gz)
 
 Key design points:
 - **Upsert by PMID:** The primary key is `pmid`, so re-ingesting an article with updated metadata (e.g., new MeSH terms assigned months after publication) overwrites the old record automatically.
-- **No downtime:** Milvus upsert works on a live collection — no need to stop the API server.
+- **No downtime:** Milvus upsert works on a live collection — no need to stop the API server. For larger batch updates, Milvus's alias feature (`utility.create_alias` / `utility.alter_alias`) enables a blue-green deployment pattern: ingest into a new collection (e.g., `pubmed_abstracts_v2`), verify, then atomically switch the alias to point to it. The backend references the collection name through `config.py` (`milvus_collection`), so this would require only a config-level change to use an alias instead of a direct collection name.
 - **Incremental, not full rebuild:** Only new/changed records need processing. Embedding API costs scale linearly with the number of new records, not the total corpus size.
 
 **References:** `data_pipeline/download_hf.py`, `backend/src/ingestion/pipeline.py`, `backend/src/ingestion/embedder.py` (upsert_chunks)
@@ -187,7 +187,7 @@ The current setup uses `milvus_setup.py` with two modes:
 - **Default (idempotent):** If the collection exists, it is reused as-is. New fields cannot be added to an existing Milvus collection without recreation.
 - **Recreate mode (`--recreate`):** Drops and recreates the collection with the new schema, then requires full re-ingestion.
 
-For production, we would mitigate this with a blue-green strategy: create a new collection with the updated schema, ingest data into it, then switch the backend config to point to the new collection. The old collection is kept as rollback until the new one is verified.
+For production, this maps naturally to the same blue-green pattern described in Q16: create a new collection with the updated schema (e.g., `pubmed_abstracts_v2`), ingest data into it, verify correctness, then use Milvus's `alter_alias` to atomically switch the alias. The old collection is retained as an instant rollback target. The backend already references the collection name through a single config value (`settings.milvus_collection`), so adopting aliases requires minimal code change.
 
 Milvus also supports collection export/import (`backend/src/ingestion/export_collection.py`, `import_collection.py`) for backup and migration between environments.
 
