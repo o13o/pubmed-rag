@@ -10,6 +10,8 @@ export default defineConfig({
       "/search": "http://localhost:8000",
       "/health": "http://localhost:8000",
       "/analyze": "http://localhost:8000",
+      "/transcribe": "http://localhost:8000",
+      "/review": "http://localhost:8000",
     },
   },
 });
