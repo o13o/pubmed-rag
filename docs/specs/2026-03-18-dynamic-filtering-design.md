@@ -110,7 +110,7 @@ These are defined as constants in the frontend only. The backend accepts any str
 - Two checkbox groups: Publication Types, Disease Area
 - Show badge with count of active advanced filters when collapsed
 - Selected values passed to API as `publication_types` and `mesh_categories` arrays
-- Existing "Clear" button resets advanced filters too
+- "Clear" button resets advanced filters (publication_types, mesh_categories) along with conversation state
 
 #### `api.ts` and `types/index.ts`
 

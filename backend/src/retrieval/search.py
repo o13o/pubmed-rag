@@ -42,15 +42,19 @@ def build_filter_expression(filters: SearchFilters) -> str:
         pt_clauses = [
             f'publication_types like "%{_sanitize_like_value(pt)}%"'
             for pt in filters.publication_types
+            if _sanitize_like_value(pt).strip()
         ]
-        conditions.append(f"({' or '.join(pt_clauses)})")
+        if pt_clauses:
+            conditions.append(f"({' or '.join(pt_clauses)})")
     if filters.mesh_categories:
         # mesh_categories filter maps to the mesh_terms Milvus field
         mc_clauses = [
             f'mesh_terms like "%{_sanitize_like_value(mc)}%"'
             for mc in filters.mesh_categories
+            if _sanitize_like_value(mc).strip()
         ]
-        conditions.append(f"({' or '.join(mc_clauses)})")
+        if mc_clauses:
+            conditions.append(f"({' or '.join(mc_clauses)})")
 
     return " and ".join(conditions)
 

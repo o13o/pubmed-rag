@@ -457,7 +457,7 @@ In `handleReview` (around line 267-273):
 
 - [ ] **Step 5: Update `handleClear` to reset advanced filters**
 
-In `handleClear` (around line 74), ensure `setFilters` resets the new fields. The current implementation only resets specific state — it does NOT reset filters. That's correct: we don't want Clear to reset filter preferences. The filters are already initialized with empty arrays and will be preserved. No change needed here.
+In `handleClear` (around line 74), add `setFilters((prev) => ({ ...prev, publication_types: [], mesh_categories: [] }))` to reset advanced filters when clearing conversation. This matches the spec requirement and keeps UX consistent — Clear means full reset.
 
 - [ ] **Step 6: Verify TypeScript compiles**
 

@@ -148,6 +148,25 @@ def test_build_filter_sanitize_backslash():
     assert "\\" not in expr.replace('like "%', "").replace('%"', "")
 
 
+def test_build_filter_empty_string_ignored():
+    filters = SearchFilters(publication_types=["", "  "])
+    expr = build_filter_expression(filters)
+    assert expr == ""
+
+
+def test_build_filter_empty_string_mixed_with_valid():
+    filters = SearchFilters(publication_types=["", "Review", "  "])
+    expr = build_filter_expression(filters)
+    assert 'publication_types like "%Review%"' in expr
+    assert " or " not in expr  # Only one valid clause, no OR
+
+
+def test_build_filter_mesh_empty_string_ignored():
+    filters = SearchFilters(mesh_categories=["", "%%%"])
+    expr = build_filter_expression(filters)
+    assert expr == ""
+
+
 def test_parse_search_results_includes_publication_types():
     entity_data = {
         "pmid": "456",

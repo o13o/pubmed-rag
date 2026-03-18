@@ -85,6 +85,7 @@ function App() {
     setAnalyzing(false);
     setReviewResult(null);
     setReviewing(false);
+    setFilters((prev) => ({ ...prev, publication_types: [], mesh_categories: [] }));
   };
 
   const handleSend = async (query: string) => {
