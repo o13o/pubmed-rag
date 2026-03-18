@@ -47,7 +47,7 @@ function App() {
   const [reviewResult, setReviewResult] = useState<LiteratureReview | null>(null);
   const [reviewing, setReviewing] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const [sidebarWidth, setSidebarWidth] = useState(600);
   const dragging = useRef(false);
 
   const handleMouseDown = useCallback(() => {
