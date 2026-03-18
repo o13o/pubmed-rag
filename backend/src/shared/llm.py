@@ -10,15 +10,39 @@ logger = logging.getLogger(__name__)
 
 litellm.suppress_debug_info = True
 
-# Enable LangFuse tracing if credentials are configured
-if os.environ.get("LANGFUSE_PUBLIC_KEY"):
-    litellm.success_callback = ["langfuse"]
-    litellm.failure_callback = ["langfuse"]
-    logger.info("LangFuse tracing enabled")
+_langfuse_initialized = False
+
+
+def _init_langfuse() -> None:
+    """Enable LangFuse tracing if credentials are configured."""
+    global _langfuse_initialized
+    if _langfuse_initialized:
+        return
+    _langfuse_initialized = True
+
+    public_key = os.environ.get("LANGFUSE_PUBLIC_KEY")
+    if not public_key:
+        # LiteLLM's langfuse callback reads credentials from os.environ,
+        # so we copy them from pydantic-settings (.env) if not already set.
+        from src.shared.config import get_settings
+        settings = get_settings()
+        if settings.langfuse_public_key:
+            os.environ["LANGFUSE_PUBLIC_KEY"] = settings.langfuse_public_key
+            os.environ["LANGFUSE_SECRET_KEY"] = settings.langfuse_secret_key
+            os.environ["LANGFUSE_HOST"] = settings.langfuse_host
+            public_key = settings.langfuse_public_key
+
+    if public_key:
+        if "langfuse" not in litellm.success_callback:
+            litellm.success_callback.append("langfuse")
+        if "langfuse" not in litellm.failure_callback:
+            litellm.failure_callback.append("langfuse")
+        logger.info("LangFuse tracing enabled")
 
 
 class LLMClient:
     def __init__(self, model: str = "gpt-4o-mini", timeout: int = 30, num_retries: int = 3):
+        _init_langfuse()
         self.model = model
         self.timeout = timeout
         self.num_retries = num_retries
