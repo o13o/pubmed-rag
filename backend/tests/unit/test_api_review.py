@@ -80,6 +80,24 @@ def test_review_passes_filters(mock_pipeline_cls, client):
     assert filters.top_k == 5
 
 
+@patch("src.api.routes.review.ReviewPipeline")
+def test_review_passes_publication_types_filter(mock_pipeline_cls, client):
+    mock_pipeline = MagicMock()
+    mock_pipeline.run.return_value = _mock_review()
+    mock_pipeline_cls.return_value = mock_pipeline
+
+    response = client.post("/review", json={
+        "query": "cancer",
+        "publication_types": ["Systematic Review"],
+        "mesh_categories": ["Neoplasms", "Cardiovascular Diseases"],
+    })
+    assert response.status_code == 200
+    call_args = mock_pipeline.run.call_args
+    filters = call_args[0][1]  # second positional arg
+    assert filters.publication_types == ["Systematic Review"]
+    assert filters.mesh_categories == ["Neoplasms", "Cardiovascular Diseases"]
+
+
 def test_review_requires_query(client):
     response = client.post("/review", json={})
     assert response.status_code == 422

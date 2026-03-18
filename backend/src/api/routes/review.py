@@ -21,6 +21,8 @@ class ReviewRequest(BaseModel):
     year_min: int | None = None
     year_max: int | None = None
     journals: list[str] = Field(default_factory=list)
+    publication_types: list[str] = Field(default_factory=list)
+    mesh_categories: list[str] = Field(default_factory=list)
     top_k: int = 10
     search_mode: str | None = None
 
@@ -35,6 +37,8 @@ def review_endpoint(
         year_min=req.year_min,
         year_max=req.year_max,
         journals=req.journals,
+        publication_types=req.publication_types,
+        mesh_categories=req.mesh_categories,
         top_k=req.top_k,
         search_mode=req.search_mode,
     )

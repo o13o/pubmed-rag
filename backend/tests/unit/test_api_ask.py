@@ -95,3 +95,39 @@ def test_ask_stream_false_returns_json(mock_ask, client):
     assert response.status_code == 200
     data = response.json()
     assert data["answer"] == "Test answer."
+
+
+@patch("src.api.routes.ask.rag_ask")
+def test_ask_passes_publication_types_filter(mock_ask, client):
+    mock_ask.return_value = ValidatedResponse(
+        answer="Answer.", citations=[], query="test",
+        warnings=[], disclaimer="Disclaimer.", is_grounded=True,
+    )
+    response = client.post("/ask", json={
+        "query": "cancer",
+        "publication_types": ["Review"],
+        "mesh_categories": ["Neoplasms"],
+    })
+    assert response.status_code == 200
+    call_kwargs = mock_ask.call_args
+    filters = call_kwargs.kwargs.get("filters") or call_kwargs[1].get("filters")
+    assert filters.publication_types == ["Review"]
+    assert filters.mesh_categories == ["Neoplasms"]
+
+
+@patch("src.api.routes.ask.ask_stream")
+def test_ask_stream_passes_publication_types_filter(mock_ask_stream, client):
+    mock_ask_stream.return_value = iter([
+        {"event": "done", "data": {"citations": [], "warnings": [], "disclaimer": "", "is_grounded": True}},
+    ])
+    response = client.post("/ask", json={
+        "query": "cancer",
+        "publication_types": ["Meta-Analysis"],
+        "mesh_categories": ["Cardiovascular Diseases"],
+        "stream": True,
+    })
+    assert response.status_code == 200
+    call_kwargs = mock_ask_stream.call_args
+    filters = call_kwargs.kwargs.get("filters") or call_kwargs[1].get("filters")
+    assert filters.publication_types == ["Meta-Analysis"]
+    assert filters.mesh_categories == ["Cardiovascular Diseases"]

@@ -39,6 +39,21 @@ def test_search_returns_results(mock_search, client):
     assert data["results"][0]["pmid"] == "123"
 
 
+@patch("src.retrieval.client.LocalSearchClient.search")
+def test_search_passes_publication_types_filter(mock_search, client):
+    mock_search.return_value = []
+    response = client.post("/search", json={
+        "query": "cancer",
+        "publication_types": ["Randomized Controlled Trial", "Meta-Analysis"],
+        "mesh_categories": ["Neoplasms"],
+    })
+    assert response.status_code == 200
+    call_args = mock_search.call_args
+    filters = call_args[0][1]  # second positional arg to search(query, filters)
+    assert filters.publication_types == ["Randomized Controlled Trial", "Meta-Analysis"]
+    assert filters.mesh_categories == ["Neoplasms"]
+
+
 def test_search_requires_query(client):
     response = client.post("/search", json={})
     assert response.status_code == 422
