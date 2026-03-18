@@ -31,6 +31,8 @@ function App() {
   const [filters, setFilters] = useState<Filters>({
     top_k: 10,
     search_mode: "dense",
+    publication_types: [],
+    mesh_categories: [],
   });
   const [messages, setMessages] = useState<Message[]>([]);
   const [citations, setCitations] = useState<Citation[]>([]);
@@ -116,6 +118,8 @@ function App() {
             year_max: filters.year_max,
             top_k: filters.top_k,
             search_mode: filters.search_mode,
+            publication_types: filters.publication_types,
+            mesh_categories: filters.mesh_categories,
             stream: true,
           },
           onToken: (text) => {
@@ -173,6 +177,8 @@ function App() {
           year_max: filters.year_max,
           top_k: filters.top_k,
           search_mode: filters.search_mode,
+          publication_types: filters.publication_types,
+          mesh_categories: filters.mesh_categories,
         });
         const infoMsg: Message = {
           id: crypto.randomUUID(),
@@ -214,6 +220,7 @@ function App() {
               year: c.year,
               journal: c.journal,
               mesh_terms: [],
+              publication_types: [],
             }));
       const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
       const query = lastUserMsg?.content ?? "";
@@ -270,6 +277,8 @@ function App() {
         year_max: filters.year_max,
         top_k: filters.top_k,
         search_mode: filters.search_mode,
+        publication_types: filters.publication_types,
+        mesh_categories: filters.mesh_categories,
       });
       setReviewResult(result);
     } catch (err) {

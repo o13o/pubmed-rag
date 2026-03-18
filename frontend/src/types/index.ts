@@ -19,6 +19,8 @@ export interface AskRequest {
   year_max?: number;
   top_k?: number;
   search_mode?: string;
+  publication_types?: string[];
+  mesh_categories?: string[];
   stream?: boolean;
 }
 
@@ -37,6 +39,8 @@ export interface SearchRequest {
   year_max?: number;
   top_k?: number;
   search_mode?: string;
+  publication_types?: string[];
+  mesh_categories?: string[];
 }
 
 export interface SearchResult {
@@ -47,6 +51,7 @@ export interface SearchResult {
   year: number;
   journal: string;
   mesh_terms: string[];
+  publication_types: string[];
 }
 
 export interface SearchResponse {
@@ -61,6 +66,8 @@ export interface Filters {
   year_max?: number;
   top_k: number;
   search_mode: string;
+  publication_types: string[];
+  mesh_categories: string[];
 }
 
 export interface SSETokenEvent {
@@ -125,6 +132,8 @@ export interface ReviewRequest {
   journals?: string[];
   top_k?: number;
   search_mode?: string;
+  publication_types?: string[];
+  mesh_categories?: string[];
 }
 
 export interface LiteratureReview {
