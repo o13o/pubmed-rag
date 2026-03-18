@@ -52,6 +52,7 @@ class SearchResult(BaseModel):
     year: int
     journal: str
     mesh_terms: list[str] = Field(default_factory=list)
+    publication_types: list[str] = Field(default_factory=list)
 
 
 class Citation(BaseModel):

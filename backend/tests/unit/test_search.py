@@ -52,9 +52,10 @@ def test_parse_search_results():
         "year": 2023,
         "journal": "Nature",
         "mesh_terms": '["Neoplasms"]',
+        "publication_types": '["Journal Article"]',
     }
     mock_hit = MagicMock()
-    mock_hit.entity.get = lambda k: entity_data[k]
+    mock_hit.entity.get = lambda k: entity_data.get(k)
     mock_hit.distance = 0.95  # Milvus COSINE: higher = more similar
 
     results = parse_search_results([mock_hit])
@@ -62,6 +63,7 @@ def test_parse_search_results():
     assert results[0].pmid == "123"
     assert results[0].score == 0.95
     assert results[0].mesh_terms == ["Neoplasms"]
+    assert results[0].publication_types == ["Journal Article"]
 
 
 def test_resolve_search_mode_from_filters():
@@ -75,3 +77,91 @@ def test_resolve_search_mode_default_from_config(monkeypatch):
     # Should fall back to config default ("dense")
     mode = _resolve_search_mode(filters)
     assert mode == "dense"
+
+
+def test_build_filter_publication_types_single():
+    filters = SearchFilters(publication_types=["Review"])
+    expr = build_filter_expression(filters)
+    assert 'publication_types like "%Review%"' in expr
+
+
+def test_build_filter_publication_types_multiple_or():
+    filters = SearchFilters(publication_types=["Review", "Meta-Analysis"])
+    expr = build_filter_expression(filters)
+    assert 'publication_types like "%Review%"' in expr
+    assert 'publication_types like "%Meta-Analysis%"' in expr
+    assert " or " in expr
+
+
+def test_build_filter_mesh_categories_single():
+    filters = SearchFilters(mesh_categories=["Neoplasms"])
+    expr = build_filter_expression(filters)
+    assert 'mesh_terms like "%Neoplasms%"' in expr
+
+
+def test_build_filter_mesh_categories_multiple_or():
+    filters = SearchFilters(mesh_categories=["Neoplasms", "Cardiovascular Diseases"])
+    expr = build_filter_expression(filters)
+    assert 'mesh_terms like "%Neoplasms%"' in expr
+    assert 'mesh_terms like "%Cardiovascular Diseases%"' in expr
+    assert " or " in expr
+
+
+def test_build_filter_combined_year_and_publication_types():
+    filters = SearchFilters(year_min=2023, publication_types=["Randomized Controlled Trial"])
+    expr = build_filter_expression(filters)
+    assert "year >= 2023" in expr
+    assert 'publication_types like "%Randomized Controlled Trial%"' in expr
+    assert " and " in expr
+
+
+def test_build_filter_combined_all():
+    filters = SearchFilters(
+        year_min=2022,
+        publication_types=["Review"],
+        mesh_categories=["Neoplasms"],
+    )
+    expr = build_filter_expression(filters)
+    assert "year >= 2022" in expr
+    assert 'publication_types like "%Review%"' in expr
+    assert 'mesh_terms like "%Neoplasms%"' in expr
+    # Should have AND between groups
+    assert expr.count(" and ") >= 2
+
+
+def test_build_filter_sanitize_percent():
+    filters = SearchFilters(publication_types=["Review%injection"])
+    expr = build_filter_expression(filters)
+    assert "%" not in expr.replace('like "%', "").replace('%"', "")
+
+
+def test_build_filter_sanitize_quote():
+    filters = SearchFilters(publication_types=['Review"injection'])
+    expr = build_filter_expression(filters)
+    # The sanitized value should not contain double quotes
+    assert 'Reviewinjection' in expr
+
+
+def test_build_filter_sanitize_backslash():
+    filters = SearchFilters(mesh_categories=["Neoplasms\\test"])
+    expr = build_filter_expression(filters)
+    assert "\\" not in expr.replace('like "%', "").replace('%"', "")
+
+
+def test_parse_search_results_includes_publication_types():
+    entity_data = {
+        "pmid": "456",
+        "title": "Test Title",
+        "abstract_text": "Test abstract",
+        "year": 2023,
+        "journal": "Nature",
+        "mesh_terms": '["Neoplasms"]',
+        "publication_types": '["Journal Article", "Review"]',
+    }
+    mock_hit = MagicMock()
+    mock_hit.entity.get = lambda k: entity_data.get(k)
+    mock_hit.distance = 0.90
+
+    results = parse_search_results([mock_hit])
+    assert len(results) == 1
+    assert results[0].publication_types == ["Journal Article", "Review"]

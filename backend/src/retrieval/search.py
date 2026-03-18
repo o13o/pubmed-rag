@@ -14,12 +14,17 @@ from src.shared.models import SearchFilters, SearchResult
 
 logger = logging.getLogger(__name__)
 
-OUTPUT_FIELDS = ["pmid", "title", "abstract_text", "year", "journal", "mesh_terms"]
+OUTPUT_FIELDS = ["pmid", "title", "abstract_text", "year", "journal", "mesh_terms", "publication_types"]
 
 
 def _get_openai_client() -> OpenAI:
     """Lazy OpenAI client initialization (avoids import-time OPENAI_API_KEY check)."""
     return OpenAI()
+
+
+def _sanitize_like_value(value: str) -> str:
+    """Strip characters that could alter like pattern or break expression syntax."""
+    return value.replace("%", "").replace('"', "").replace("\\", "")
 
 
 def build_filter_expression(filters: SearchFilters) -> str:
@@ -33,6 +38,19 @@ def build_filter_expression(filters: SearchFilters) -> str:
     if filters.journals:
         journals_str = json.dumps(filters.journals)
         conditions.append(f"journal in {journals_str}")
+    if filters.publication_types:
+        pt_clauses = [
+            f'publication_types like "%{_sanitize_like_value(pt)}%"'
+            for pt in filters.publication_types
+        ]
+        conditions.append(f"({' or '.join(pt_clauses)})")
+    if filters.mesh_categories:
+        # mesh_categories filter maps to the mesh_terms Milvus field
+        mc_clauses = [
+            f'mesh_terms like "%{_sanitize_like_value(mc)}%"'
+            for mc in filters.mesh_categories
+        ]
+        conditions.append(f"({' or '.join(mc_clauses)})")
 
     return " and ".join(conditions)
 
@@ -59,6 +77,9 @@ def parse_search_results(hits: list) -> list[SearchResult]:
         mesh_raw = hit.entity.get("mesh_terms")
         mesh_terms = json.loads(mesh_raw) if isinstance(mesh_raw, str) else mesh_raw
 
+        pt_raw = hit.entity.get("publication_types")
+        publication_types = json.loads(pt_raw) if isinstance(pt_raw, str) else pt_raw
+
         results.append(
             SearchResult(
                 pmid=hit.entity.get("pmid"),
@@ -68,6 +89,7 @@ def parse_search_results(hits: list) -> list[SearchResult]:
                 year=hit.entity.get("year"),
                 journal=hit.entity.get("journal"),
                 mesh_terms=mesh_terms if mesh_terms else [],
+                publication_types=publication_types if publication_types else [],
             )
         )
     return results
