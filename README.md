@@ -107,6 +107,30 @@ VITE_API_BASE=http://localhost:8000 npm run dev
 
 UI available at `http://localhost:5173`.
 
+### Full-Stack Docker (production)
+
+```bash
+docker compose up -d
+```
+
+This starts Milvus + Backend + Frontend (nginx). UI at `http://localhost`.
+
+### Microservice Deployment (optional)
+
+The search layer can be extracted into a standalone service using the Docker Compose overlay:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.microservice.yml up -d
+```
+
+This adds a **search-service** (port 8001) and sets `DEPLOY_MODE=microservice` on the backend, which switches from `LocalSearchClient` (direct Milvus) to `RemoteSearchClient` (HTTP to search-service). The backend code uses Protocol-based dependency injection (ADR-0003), so no application code changes are needed.
+
+| Service | Port | Role |
+|---------|------|------|
+| search-service | 8001 | Milvus vector search via HTTP |
+| backend | 8000 | RAG pipeline, agents, API gateway |
+| frontend | 80 | React UI (nginx) |
+
 ### Environment Variables
 
 | Variable | Default | Description |
@@ -119,6 +143,8 @@ UI available at `http://localhost:5173`.
 | `SEARCH_MODE` | `dense` | Search mode: `dense` or `hybrid` |
 | `RERANKER_TYPE` | `cross_encoder` | Reranker: `none`, `cross_encoder`, or `llm` |
 | `MESH_DB_PATH` | `data/mesh.duckdb` | Path to MeSH DuckDB database |
+| `DEPLOY_MODE` | `monolith` | `monolith` (direct Milvus) or `microservice` (HTTP to search-service) |
+| `SEARCH_SERVICE_URL` | `http://localhost:8001` | URL of the search service (microservice mode only) |
 | `LANGFUSE_PUBLIC_KEY` | (optional) | LangFuse public key for observability |
 | `LANGFUSE_SECRET_KEY` | (optional) | LangFuse secret key |
 | `LANGFUSE_HOST` | `https://cloud.langfuse.com` | LangFuse server URL |
@@ -458,6 +484,7 @@ To enable: set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and optionally `LAN
 ```
 pubmed-rag/
 ├── docker-compose.yml              # Milvus + etcd + MinIO + Backend + Frontend
+├── docker-compose.microservice.yml # Overlay: adds search-service for microservice mode
 ├── .env.example                    # Environment variable template
 ├── docs/
 │   ├── architecture.mmd            # Architecture diagram (Mermaid source)
@@ -475,6 +502,7 @@ pubmed-rag/
 │   │   ├── ingestion/              # Data loading, chunking, embedding, Milvus setup
 │   │   ├── retrieval/              # Hybrid search, query expansion, reranking
 │   │   ├── rag/                    # RAG chain orchestration & prompt templates
+│   │   ├── search_service/          # Standalone search microservice (port 8001)
 │   │   ├── shared/                 # Config, models, LLM client, MeSH DB
 │   │   └── cli.py                  # CLI entry point
 │   ├── scripts/
