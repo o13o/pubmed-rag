@@ -144,18 +144,19 @@ Key design points:
 NLM publishes an updated MeSH descriptor XML annually (e.g., `desc2025.xml` -> `desc2026.xml`). The operation:
 
 1. **Download** the new descriptor XML from NLM: `https://nlmpubs.nlm.nih.gov/projects/mesh/MESH_FILES/xmlmesh/`
-2. **Rebuild DuckDB:** Run `uv run python scripts/build_mesh_db.py --input data/desc2026.xml --output data/mesh.duckdb`. This drops and recreates the DuckDB file (~30k descriptors, ~200k synonyms, takes seconds).
-3. **Restart the backend** to pick up the new DuckDB file (or, if using the file path from config, just replace the file — DuckDB opens read-only connections per query).
+2. **Rebuild DuckDB:** Run `uv run python scripts/build_mesh_db.py --input data/desc2026.xml --output data/mesh.duckdb`. This drops and recreates the DuckDB file (~30k descriptors, ~200k synonyms, completes in seconds).
+3. **Rebuild and redeploy the backend container:** The DuckDB file is baked into the Docker image at build time. Run `docker compose build backend && docker compose up -d backend` to deploy with the updated MeSH hierarchy. The rolling restart ensures zero downtime.
 
 ```
 NLM MeSH XML (desc2026.xml)
-  -> build_mesh_db.py  -> data/mesh.duckdb (replaced atomically)
-  -> restart backend   -> new MeSH hierarchy live
+  -> build_mesh_db.py  -> data/mesh.duckdb (rebuilt)
+  -> docker build       -> new backend image with updated mesh.duckdb
+  -> docker compose up  -> container redeployed, new MeSH live
 ```
 
-The MeSH DB is a single file with no external dependencies. The build script is idempotent — it deletes the old file and creates a fresh one.
+The MeSH DB is a single file with no external dependencies. The build script is idempotent — it deletes the old file and creates a fresh one. Since the update is annual and fully scriptable, it can be automated via CI/CD: a scheduled pipeline detects the new NLM release, runs `build_mesh_db.py`, rebuilds the container image, and triggers redeployment.
 
-**References:** `backend/scripts/build_mesh_db.py`, `backend/src/shared/mesh_db.py`
+**References:** `backend/scripts/build_mesh_db.py`, `backend/src/shared/mesh_db.py`, `docker-compose.yml`
 
 ### Q18: What happens to search quality when new data is ingested but MeSH hasn't been updated (or vice versa)?
 
