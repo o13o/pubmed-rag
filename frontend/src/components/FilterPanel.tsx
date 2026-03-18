@@ -59,7 +59,7 @@ export function FilterPanel({
   };
 
   return (
-    <div className="border-t border-gray-800 bg-gray-950">
+    <div className="border-t border-gray-800 bg-gray-950 flex-shrink-0">
       <div className="flex items-center gap-3 flex-wrap px-4 py-2">
         {/* Mode toggle */}
         <div className="flex items-center gap-1">

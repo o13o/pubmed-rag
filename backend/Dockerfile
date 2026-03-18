@@ -11,8 +11,9 @@ COPY pyproject.toml uv.lock ./
 # Install dependencies
 RUN uv sync --frozen --no-dev
 
-# Copy source
+# Copy source and prompts
 COPY src/ src/
+COPY prompts/ prompts/
 
 EXPOSE 8000
 
